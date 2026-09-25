@@ -351,7 +351,7 @@
           <tbody id="hazardTableBody"></tbody>
         </table>
         <div class="disclaimer" id="gridDisclaimer">
-          <b>Nota metodologica:</b> a<sub>g</sub>, F<sub>0</sub> e T<sub>C</sub>* sono calcolati caricando la griglia da <code>grid-data.json</code> con l'algoritmo di doppia interpolazione dell'Allegato A al D.M. 14/01/2008 (interpolazione spaziale IDW sui 4 nodi più vicini + interpolazione log-log tra i periodi di ritorno di riferimento). <b>Il file <code>grid-data.json</code> incluso è un reticolo dimostrativo a 20 nodi.</b> Per uso professionale, generare il reticolo ufficiale a 10.751 nodi (Allegato B, Open Data MIT/INGV) con lo script <code>convert_grid.py</code> incluso — vedi i commenti nello script per il formato del file di input.
+          <b>Nota metodologica:</b> a<sub>g</sub>, F<sub>0</sub> e T<sub>C</sub>* sono calcolati caricando la griglia da <code>grid-data.json</code> con l'algoritmo di doppia interpolazione dell'Allegato A al D.M. 14/01/2008 (interpolazione spaziale IDW sui 4 nodi più vicini + interpolazione log-log tra i periodi di ritorno di riferimento). <span id="gridStatusLabel">Caricamento della griglia in corso…</span>
         </div>
       </div>
     </div>
@@ -598,17 +598,45 @@ function normalizeGrid(raw){
 }
 
 async function loadGrid(){
+  let sourceLabel = null;
   try{
     const resp = await fetch('grid-data.json', {cache:'no-store'});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const raw = await resp.json();
     GRID = normalizeGrid(raw);
-    console.info('Griglia sismica caricata:', (raw.meta && raw.meta.source) || '(fonte non specificata)', '-', GRID.count, 'nodi');
+    sourceLabel = (raw.meta && raw.meta.source) || null;
+    console.info('Griglia sismica caricata:', sourceLabel || '(fonte non specificata)', '-', GRID.count, 'nodi');
   }catch(err){
     gridLoadError = err;
     GRID = normalizeGrid(FALLBACK_GRID);
     console.warn('grid-data.json non caricato, uso reticolo di riserva interno (3 nodi). Motivo:', err.message,
       '\nSe la pagina è stata aperta come file locale (file://), avvia un piccolo server locale, es.: python3 -m http.server, poi apri http://localhost:8000/index.html');
+  }
+  updateGridStatusLabel(sourceLabel);
+}
+
+// Aggiorna il testo del disclaimer in base a ciò che è REALMENTE caricato in
+// GRID, invece di un numero scritto a mano nell'HTML: evita che il testo
+// resti disallineato quando grid-data.json viene sostituito (demo -> reale
+// o viceversa) senza aggiornare anche questo paragrafo a mano.
+function updateGridStatusLabel(sourceLabel){
+  const el = document.getElementById('gridStatusLabel');
+  if(!el) return;
+  const n = GRID.count;
+
+  if(gridLoadError){
+    el.innerHTML = `<b>grid-data.json non è stato caricato</b> (reticolo di riserva interno con ${n} nodi in uso). ` +
+      `Se la pagina è aperta come file locale, avvia un server locale (es. <code>python3 -m http.server</code>) e riprova.`;
+    return;
+  }
+
+  const isFullGrid = n >= 1000; // il reticolo ufficiale ha 10.751 nodi; una griglia demo ne ha una decina
+  if(isFullGrid){
+    el.innerHTML = `Il reticolo attualmente caricato contiene <b>${n} nodi</b>` +
+      (sourceLabel ? ` (fonte dichiarata nel file: ${sourceLabel})` : '') + `.`;
+  } else {
+    el.innerHTML = `<b>Il file grid-data.json attualmente caricato è un reticolo dimostrativo a soli ${n} nodi.</b> ` +
+      `Per uso professionale, generare il reticolo ufficiale a 10.751 nodi (Allegato B, Open Data MIT/INGV) con lo script <code>convert_grid.py</code> incluso — vedi i commenti nello script per il formato del file di input.`;
   }
 }
 
