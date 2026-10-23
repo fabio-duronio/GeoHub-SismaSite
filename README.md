@@ -1,54 +1,150 @@
-# Geohub - Parametri sismici
+# SismaSite — Parametri sismici del sito secondo NTC 2018
 
-Applicazione web per l'analisi sismica preliminare di un sito secondo le Norme Tecniche per le Costruzioni 2018 (NTC 2018): calcola i parametri di pericolosità sismica di base interpolandoli dal reticolo di riferimento ufficiale a 10.751 nodi, genera gli spettri di risposta e supporta lo screening preliminare di pendii e liquefazione.
+Applicazione web *client-side* per il calcolo dei parametri di pericolosità sismica di base e delle azioni sismiche su un sito, secondo il **D.M. 17/01/2018 (NTC 2018)**, la **Circolare n. 7/2019** e gli **Allegati A e B al D.M. 14/01/2008**.
 
-🔗 **Demo online:** https://geologiaintasca.github.io/GeoHub-Parametri-sismici/
+Repository: `geologiaintasca/GeoHub-Parametri-sismici` · Demo: <https://geologiaintasca.github.io/GeoHub-Parametri-sismici/>
+
+> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e i coefficienti sismici `k_h`, `k_v`. **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
+
+---
+
+## Funzionalità
+
+- **Ubicazione del sito** su mappa interattiva (Leaflet) o per coordinate inserite a mano.
+- **Parametri di pericolosità sismica di base**: `a_g`, `F_0`, `T*_C` per i quattro stati limite (SLO, SLD, SLV, SLC), interpolati dal **reticolo di riferimento ufficiale a 10.751 nodi** (Allegato B) e, per le isole, dalla **Tabella 2** dello stesso Allegato.
+- **Periodo di ritorno** `T_R` calcolato da `V_R = V_N · C_U` e `P_VR` secondo NTC §2.4.3.
+- **Coefficienti di amplificazione** `S_S`, `C_C`, `S_T` e periodi `T_B`, `T_C`, `T_D` (NTC §3.2.3.2.1, Tabb. 3.2.IV e 3.2.V).
+- **Spettri di risposta elastici** orizzontale `S_e(T)` e verticale `S_ve(T)`, con effetto dello smorzamento `η`.
+- **Spettri di risposta di progetto** orizzontale `S_d(T)` e verticale `S_dv(T)` secondo §3.2.3.4 (SLO: q = 1) e §3.2.3.5 (SLD/SLV/SLC: sostituzione `η → 1/q`), con fattore di comportamento `q` impostabile e applicazione del minimo `S_d ≥ 0,2·a_g`.
+- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica di pendii e opere di sostegno (NTC §7.11.3.5.2, Tab. 7.11.I).
+- **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2.
+- **Scenario di disaggregazione illustrativo** (M_w, R, ε e matrice M_w–R) — *non è un dato INGV*, vedi oltre.
+- **Report stampabile** con intestazione di tracciabilità: sito/commessa, data, versione, coordinate, fonte dei parametri e **ID e distanza dei nodi del reticolo utilizzati**.
 
 ## Prerequisiti
 
-Per usare l'applicazione:
-- Un browser moderno (Chrome, Firefox, Edge, Safari)
-- Un server web locale per lo sviluppo, ad es. Python 3 (già incluso in macOS/Linux, scaricabile da [python.org](https://python.org) su Windows) — necessario perché i browser bloccano il caricamento di `grid-data.json` se la pagina viene aperta come file locale
+- Un browser moderno (Chrome, Firefox, Edge, Safari).
+- Python 3 per servire la cartella in locale durante lo sviluppo (necessario: i browser bloccano `fetch()` di `grid-data.json` se la pagina è aperta come `file://`).
 
-Per rigenerare `grid-data.json` da una nuova fonte dati (facoltativo):
-- Python 3.10+
-- Librerie `pandas`, `xlrd` (per file `.xls`) e/o `openpyxl` (per file `.xlsx`)
+Per rigenerare `grid-data.json`:
 
-## Installazione
+- Python 3.10+, `pandas`, `xlrd` (file `.xls`) e/o `openpyxl` (file `.xlsx`). Il ramo CSV/TXT usa solo la libreria standard.
 
-```bash
-git clone https://github.com/geologiaintasca/GeoHub.git
-cd GeoHub
-```
-
-Nessuna build o installazione di dipendenze è necessaria per usare l'app: è HTML/CSS/JavaScript puro, eseguito interamente nel browser.
-
-## Guida all'uso
-
-Avviare un server locale nella cartella del progetto:
+## Installazione e avvio
 
 ```bash
+git clone https://github.com/geologiaintasca/GeoHub-Parametri-sismici.git
+cd GeoHub-Parametri-sismici
 python3 -m http.server 8000
 ```
 
-e aprire [http://localhost:8000/](http://localhost:8000/) nel browser.
+Apri <http://localhost:8000/>. Non serve alcuna build né installazione di dipendenze: l'applicazione è HTML/CSS/JavaScript puro, eseguita interamente nel browser.
 
-Per rigenerare `grid-data.json` a partire da un file ufficiale del reticolo di riferimento (Excel o TXT/CSV):
+**Deploy**: la cartella è già pubblicabile così com'è su GitHub Pages (branch `main`, root). Non ci sono passaggi di compilazione.
+
+## Rigenerare `grid-data.json`
+
+Il file `grid-data.json` già presente nel repository è **verificato** e corrisponde ai dati ufficiali (vedi [Validazione](#validazione)). Va rigenerato solo se si cambia la fonte dati.
 
 ```bash
 pip install pandas xlrd openpyxl
+
+# sorgente ufficiale in Excel
 python3 convert_grid.py spettri2008.xls grid-data.json
+
+# oppure sorgente ufficiale in CSV (stesso risultato)
+python3 convert_grid.py spettri2008.csv grid-data.json
 ```
 
-## Tecnologie utilizzate
+Lo script rileva automaticamente foglio, riga di intestazione, colonne `ID/LON/LAT` (anche in presenza della colonna `OBJECTID` anteposta), delimitatori `,`/`;`/tab, virgola decimale e **unità di misura di `ag`** (il reticolo ufficiale esprime `a_g` in **g/10**: lo script lo riconosce e converte in g). Al termine stampa un riepilogo e avvisa se il numero di nodi non è 10.751.
 
-- HTML5 / CSS3 / JavaScript (vanilla, nessun framework)
-- [Leaflet.js](https://leafletjs.com/) — mappa interattiva per la selezione del sito
-- [Chart.js](https://www.chartjs.org/) — spettri di risposta e grafico di disaggregazione
-- Python 3 (`pandas`, `xlrd`/`openpyxl`) — script di conversione dati (`convert_grid.py`)
+Opzioni utili: `--sheet`, `--header-row`, `--decimals-val` (default 4), `--decimals-coord` (default 4), `--force-ag-unit g|g10`.
 
-## 📄 Licenza
+**Fonte dei dati**: Open Data del Ministero delle Infrastrutture e dei Trasporti, dataset *Parametri Spettrali Sismici* — <https://dati.mit.gov.it/catalog/dataset/parametri-spettrali> (Allegato B al D.M. 14/01/2008, G.U.R.I. 4 febbraio 2008, S.O. n. 30).
 
-Questo progetto è distribuito sotto licenza **MIT**. Consulta il file [LICENSE](LICENSE) per i dettagli completi.
+## Metodo di calcolo
 
-> **Nota sui dati:** i dati del reticolo di riferimento sismico e i parametri NTC 2018 sono elaborati a partire da fonti ufficiali INGV / Ministero delle Infrastrutture e dei Trasporti.
+1. **Periodo di ritorno** — `T_R = −V_R / ln(1 − P_VR)`, con `V_R = V_N · C_U` e `P_VR` = 81 %, 63 %, 10 %, 5 % rispettivamente per SLO, SLD, SLV, SLC (NTC Tab. 2.5.I). Il valore è limitato all'intervallo tabulato **30–2475 anni** (Allegato A, nota 1); quando il limite interviene l'app lo segnala.
+2. **Interpolazione in `T_R`** — logaritmica tra i due periodi di ritorno tabulati che racchiudono `T_R` (Allegato A, eq. [2]).
+3. **Interpolazione spaziale** — media pesata con pesi = inversi delle distanze sui **4 nodi più vicini** (Allegato A, eq. [3]).
+4. **Isole** — per tutte le isole escluse Sicilia, Ischia, Procida e Capri i parametri sono **costanti** e sono presi dalla **Tabella 2 dell'Allegato B**; per questi siti il reticolo non viene interrogato. Il riconoscimento è geografico e approssimato: Sardegna per area rettangolare, le altre isole per centro + raggio (Elba, Pianosa, Capraia, Gorgona, Giglio, Giannutri, Montecristo, Egadi, Pantelleria, Lampedusa, Linosa, Ponza, Palmarola, Zannone, Ventotene, S. Stefano, Ustica, Tremiti, Alicudi, Filicudi, Panarea, Stromboli, Lipari, Vulcano, Salina). Un punto sulla costa antistante (es. Piombino, Argentario) resta correttamente sul reticolo.
+5. **Amplificazione** — `S_S` e `C_C` (Tab. 3.2.IV), `S_T` (Tab. 3.2.V), `T_B = T_C/3`, `T_C = C_C·T*_C`, `T_D = 4a_g + 1,6`, `η = √(10/(5+ξ))` con limite inferiore 0,55.
+6. **Spettri elastici** — orizzontale: NTC eq. 3.2.6–3.2.8; verticale (§3.2.3.2.2): `F_v = 1,35·F_0·√(a_g/g)`, **`S_S = 1`**, `S_T` da Tab. 3.2.V, `T_B` = 0,05 s, `T_C` = 0,15 s, `T_D` = 1,0 s.
+7. **Spettri di progetto** — per **SLO** coincidono con gli elastici (q = 1,0, §3.2.3.4), per entrambe le componenti. Per **SLD, SLV, SLC** si sostituisce `η` con `1/q` nelle formule [3.2.2] e [3.2.8] (§3.2.3.5): ne risulta, per `0 ≤ T < T_B`, `S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)(1 − T/T_B)]`, mentre per `T ≥ T_B` vale `S_d = S_e/q`. In ogni caso si assume `S_d(T) ≥ 0,2·a_g`. Il fattore `q` è impostato dall'utente (limiti della Tab. 7.3.I: SLD ≤ 1,5, SLV dissipativo ≥ 1,5 / non dissipativo ≤ 1,5); per la componente verticale si adotta `q = 1,5` (per SLO `q = 1`).
+8. **Coefficienti sismici** — `a_max = S_S·S_T·a_g`, `k_h = β_s·a_max/g`, `k_v = ±0,5·k_h`, con `β_s` dalla Tab. 7.11.I (0,20 / 0,27 / 0,30 per categoria A e 0,20 / 0,24 / 0,28 per B–C–D–E nelle fasce ≤ 0,1 g / 0,1–0,2 g / 0,2–0,4 g; oltre 0,4 g si adotta 0,36 / 0,32, valore conservativo di uso corrente).
+
+## Validazione
+
+Il dataset è stato confrontato **nodo per nodo** con il file ufficiale MIT: 10.751 nodi, ID e coordinate identici, `a_g`, `F_0`, `T*_C` coincidenti entro l'arrotondamento. I calcoli sono confrontati con un'implementazione indipendente delle formule NTC e con i valori tabellari delle isole.
+
+Valori di riferimento per il collaudo (**SLV**, categoria **B**, topografia **T1**, `V_N` = 50 anni, `C_U` = 1,0; `T_R` = 475 anni):
+
+| Località | a_g (g) | F_0 | T*_C (s) | S_S | a_max (g) | k_h |
+|---|---|---|---|---|---|---|
+| L'Aquila | 0,261 | 2,36 | 0,347 | 1,154 | 0,301 | 0,0842 |
+| Milano | 0,050 | 2,66 | 0,280 | 1,200 | 0,060 | 0,0120 |
+| Roma | 0,120 | 2,62 | 0,297 | 1,200 | 0,144 | 0,0346 |
+| Napoli | 0,168 | 2,37 | 0,338 | 1,200 | 0,201 | 0,0483 |
+| Catania | 0,206 | 2,46 | 0,357 | 1,197 | 0,247 | 0,0691 |
+| Cosenza | 0,272 | 2,43 | 0,373 | 1,136 | 0,309 | 0,0864 |
+| Cagliari (Tab. 2, isole) | 0,050 | 2,88 | 0,340 | 1,200 | 0,060 | 0,0120 |
+
+Spettro di progetto di riferimento (**L'Aquila, SLV, cat. B, T1, q = 1,5**): `S_d(0)` = 0,3007 g · plateau `S_d` = 0,4738 g · `S_d(1,0 s)` = 0,2233 g · `S_dv` plateau = 0,2831 g · minimo `0,2·a_g` = 0,0521 g. Con SLO il fattore `q` è forzato a 1,0 per entrambe le componenti.
+
+`T_R` attesi: SLO 30 · SLD 50 · SLV 475 · SLC 975 anni (con `V_R` = 50 anni).
+
+Per rieseguire la verifica automatica (facoltativa, richiede `playwright`):
+
+```bash
+pip install playwright && python3 -m playwright install chromium
+python3 verifica_numeri.py
+```
+
+Lo script verifica i parametri di pericolosità per 7 località (compresa un'isola), lo spettro di progetto `S_d` e il comportamento di SLO, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
+
+## Limiti e perimetro d'uso
+
+Cosa l'applicazione **non** fa, e che resta a carico del professionista:
+
+- **Spettri di progetto** `S_d(T)`: l'applicazione li calcola con il metodo semplificato delle NTC (riduzione delle ordinate elastiche tramite `q`, §3.2.3.5), ma **non sceglie né giustifica `q`**: il valore va definito dal progettista secondo Tab. 7.3.I e 7.3.II (`q = q_0·K_R`) e in funzione del comportamento strutturale dissipativo o non dissipativo e della regolarità in altezza.
+- **Non esegue analisi non lineari** né analisi con storie temporali; **non esegue analisi di risposta sismica locale** né amplificazioni 2D/3D: le amplificazioni sono quelle convenzionali `S_S`·`S_T` delle NTC.
+- **Non verifica la stabilità dei pendii**: fornisce i coefficienti `k_h`, `k_v` da usare in un'analisi pseudostatica o alla Newmark.
+- **Liquefazione**: applica **solo** i criteri di esclusione 1 (`a_max` < 0,1 g) e 2 (falda > 15 m) del §7.11.3.4.2. I criteri 3 ((N₁)₆₀ > 30, q_c1N > 180) e 4 (granulometria, Fig. 7.11.1) richiedono indagini dirette e **non** sono verificati. Il coefficiente di sicurezza `F_S` non è calcolato.
+- **Disaggregazione**: lo scenario M_w–R–ε e la matrice sono **illustrativi**, generati da un modello semplificato a partire da `a_g` (o inseriti a mano). **Non sono la disaggregazione ufficiale INGV** (progetto DPC-INGV S1 / MPS04): per quella va consultato il servizio INGV per il nodo e il `T_R` di interesse.
+- **Copertura geografica**: il reticolo copre il territorio nazionale (maglia ≤ 10 km) **esclusi** Sardegna e isole minori, gestite dalla Tabella 2. Per punti esterni alla copertura (estero, mare aperto, isole non riconosciute) l'app **segnala** che i valori sono estrapolati e non utilizzabili a fini normativi; l'attribuzione di un punto a un'isola è comunque una semplificazione geografica da verificare a cura dell'utente.
+- **Datum**: le coordinate del reticolo sono in **ED50**, mentre i campi di input sono etichettati WGS84. Lo scarto ED50–WGS84 in Italia è di 1–3 arcosecondi (≈ 50–100 m): l'effetto sui parametri è trascurabile (< 0,5 %), ma se serve rigore geodetico convertire le coordinate con `pyproj` prima dell'inserimento.
+
+I risultati riportano sempre la **fonte** utilizzata (reticolo o Tabella 2) e gli **ID dei nodi** interpolati, così il calcolo è tracciabile e ripercorribile.
+
+## Struttura del progetto
+
+```
+index.html          applicazione completa (HTML + CSS + JS vanilla)
+grid-data.json      reticolo di riferimento in forma colonnare (10.751 nodi × 9 TR)
+convert_grid.py     rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
+verifica_numeri.py  verifica automatica dei valori di riferimento (opzionale)
+README.md
+CHANGELOG.md
+LICENSE
+```
+
+Formato di `grid-data.json` (colonnare, nessuna chiave ripetuta per nodo):
+
+```json
+{ "meta": { "source": "...", "datum": "...", "trValues": [30, 50, 72, 101, 140, 201, 475, 975, 2475], "count": 10751 },
+  "id": [ ... ], "lat": [ ... ], "lon": [ ... ],
+  "ag": [ [10751 valori per TR=30], ... 9 array ],
+  "F0": [ ... ], "Tc": [ ... ] }
+```
+
+## Tecnologie
+
+HTML5, CSS3, JavaScript (vanilla, nessun framework) · [Leaflet](https://leafletjs.com/) per la mappa · [Chart.js](https://www.chartjs.org/) per i grafici · Python (`pandas`/`csv`) per la conversione dei dati.
+
+Le librerie Leaflet e Chart.js sono caricate da CDN: senza connessione la mappa e i grafici non sono disponibili, mentre il calcolo numerico e le tabelle continuano a funzionare.
+
+## Licenza e citazione
+
+Distribuito con licenza **MIT** (vedi [LICENSE](LICENSE)). I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
+
+Se usi lo strumento in un lavoro professionale o scientifico, cita: *SismaSite (GeoHub-Parametri-sismici), parametri sismici del sito secondo NTC 2018, versione X.Y.Z*.

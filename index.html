@@ -99,14 +99,26 @@
   /* ===== Layout ===== */
   .app{
     display:grid;
-    grid-template-columns:380px 1fr;
+    grid-template-columns:380px minmax(0,1fr);
     gap:18px;
     padding:20px;
     max-width:1520px;
     margin:0 auto;
   }
   @media (max-width:980px){
-    .app{grid-template-columns:1fr;}
+    .app{grid-template-columns:minmax(0,1fr);}
+  }
+  /* FIX: senza min-width:0 gli <select> con opzioni lunghe forzano la colonna
+     a superare la larghezza dello schermo (overflow orizzontale su mobile) */
+  .col-input, .col-output{min-width:0;}
+  .field input[type=text], .field input[type=number], .field select{min-width:0;}
+  .field-row{min-width:0;}
+  .panel-header{flex-wrap:wrap; gap:6px;}
+  @media (max-width:560px){
+    /* FIX: la tabella a 6 colonne eccede la larghezza dello schermo */
+    table.data-table{font-size:11px;}
+    table.data-table th, table.data-table td{padding:6px 4px;}
+    .panel-body{overflow-x:auto;}
   }
 
   .panel{
@@ -203,6 +215,24 @@
 
   .subgrid-hidden{display:none;}
 
+  /* ===== Intestazione del report (schermo e stampa) ===== */
+  .report-header{
+    background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--navy-700);
+    border-radius:var(--radius); padding:12px 16px; margin-bottom:18px;
+  }
+  .report-header .rh-row{display:flex; flex-wrap:wrap; gap:8px 26px; margin-bottom:6px;}
+  .report-header .rh-row:last-child{margin-bottom:0;}
+  .report-header .rh-l{
+    display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-500); font-weight:600;
+  }
+  .report-header .rh-v{display:block; font-size:13px; color:var(--navy-900); font-family:var(--font-mono);}
+  .badge-illustrative{
+    display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    background:var(--warn-bg); color:var(--warn); border:1px solid #eecba3; border-radius:2px;
+    padding:2px 7px; margin-left:8px; vertical-align:middle;
+  }
+  @media (max-width:560px){ .report-header .rh-row{gap:6px 16px;} }
+
   .footer-note{
     text-align:center; color:var(--slate-500); font-size:11.5px; padding:20px 0 40px;
   }
@@ -262,7 +292,11 @@
             <input type="number" id="lon" step="0.0001" value="13.3995">
           </div>
         </div>
-        <div class="hint">Default: L'Aquila. Griglia di riferimento: nodi INGV interpolati (algoritmo semplificato, vedi nota).</div>
+        <div class="field" style="margin-top:12px;">
+          <label for="siteName">Nome sito / commessa (facoltativo)</label>
+          <input type="text" id="siteName" placeholder="es. Comune di …, località …, comm. 2026/xx">
+        </div>
+        <div class="hint">Default: L'Aquila. Reticolo di riferimento Allegato B (10.751 nodi) + Tabella 2 per le isole.</div>
       </div>
     </div>
 
@@ -307,6 +341,11 @@
           <label for="damping">Smorzamento viscoso ξ (%)</label>
           <input type="number" id="damping" value="5" min="1" max="30" step="0.5">
         </div>
+        <div class="field">
+          <label for="qFactor">Fattore di comportamento q</label>
+          <input type="number" id="qFactor" value="1.5" min="1" max="6" step="0.1">
+          <div class="hint">Analisi lineare (Tab. 7.3.I): SLO q = 1,0 · SLD q ≤ 1,5 · SLV dissipativo q ≥ 1,5, non dissipativo q ≤ 1,5.</div>
+        </div>
       </div>
     </div>
 
@@ -340,6 +379,23 @@
 
   <!-- ================= RIGHT: OUTPUT ================= -->
   <div class="col-output">
+
+    <div id="warnBox"></div>
+
+    <div class="report-header" id="reportHeader">
+      <div class="rh-row">
+        <div><span class="rh-l">Sito / commessa</span><span class="rh-v" id="rhSite">–</span></div>
+        <div><span class="rh-l">Data del calcolo</span><span class="rh-v" id="rhDate">–</span></div>
+        <div><span class="rh-l">Versione applicativo</span><span class="rh-v" id="rhVersion">–</span></div>
+      </div>
+      <div class="rh-row">
+        <div><span class="rh-l">Coordinate del punto</span><span class="rh-v" id="rhCoords">–</span></div>
+        <div><span class="rh-l">Fonte dei parametri di pericolosità</span><span class="rh-v" id="rhSource">–</span></div>
+      </div>
+      <div class="rh-row">
+        <div style="flex:1 1 100%;"><span class="rh-l">Nodi del reticolo utilizzati (ID e distanza dal punto)</span><span class="rh-v" id="rhNodes">–</span></div>
+      </div>
+    </div>
 
     <div class="panel">
       <div class="panel-header"><h2>Parametri di pericolosità sismica di base</h2></div>
@@ -401,10 +457,42 @@
 
     <div class="panel">
       <div class="panel-header">
-        <h2>Disaggregazione della pericolosità sismica</h2>
+        <h2>Spettri di risposta di progetto S<sub>d</sub>(T)</h2>
+        <div style="font-size:12px; color:var(--slate-600);">Stato limite selezionato · q = <span id="designQLabel">–</span></div>
+      </div>
+      <div class="chart-toolbar no-print">
+        <label>Componente:</label>
+        <select id="designMode" style="padding:5px 8px; border-radius:3px; border:1px solid var(--line);">
+          <option value="both" selected>Orizzontale + Verticale</option>
+          <option value="h">Solo orizzontale</option>
+          <option value="v">Solo verticale</option>
+        </select>
+      </div>
+      <div class="chart-wrap" style="height:320px;"><canvas id="designChart"></canvas></div>
+      <div class="legend-note" id="designLegend"></div>
+      <div class="panel-body" style="padding-top:0;">
+        <table class="data-table">
+          <thead><tr><th>Grandezza</th><th>Orizzontale</th><th>Verticale</th></tr></thead>
+          <tbody id="designTableBody"></tbody>
+        </table>
+        <div class="disclaimer" id="designNote"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Disaggregazione della pericolosità sismica<span class="badge-illustrative">scenario illustrativo</span></h2>
         <div style="font-size:12px; color:var(--slate-600);">Riferita allo stato limite selezionato (T<sub>R</sub> = <span id="disaggTRLabel">–</span> anni)</div>
       </div>
       <div class="panel-body">
+
+        <div class="disclaimer" id="disaggDisclaimer" style="margin:0 0 14px;">
+          <b>Attenzione — non è un dato INGV.</b> I valori M<sub>w</sub>, R ed ε e la matrice di seguito riportati sono
+          <b>stimati con un modello semplificato</b> a partire da a<sub>g</sub> (o inseriti manualmente dall'utente) e servono solo a
+          inquadrare lo scenario. <b>Non sostituiscono la disaggregazione ufficiale</b> del progetto INGV-DPC S1/MPS04, che va
+          richiesta per il nodo e il T<sub>R</sub> di interesse. Inserendo qui i valori di un report ufficiale, la matrice
+          diventa una rappresentazione illustrativa di quei valori.
+        </div>
 
         <div class="field-row" style="grid-template-columns:1fr 1fr 1fr;">
           <div class="field">
@@ -425,7 +513,7 @@
         <div class="divider"></div>
 
         <!-- Header sintetico: terremoto dominante -->
-        <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-600); margin-bottom:10px;">Terremoto dominante</h3>
+        <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-600); margin-bottom:10px;">Scenario dominante <span style="text-transform:none; letter-spacing:0; font-weight:400; color:var(--warn);">(illustrativo)</span></h3>
         <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);">
           <div class="kpi"><div class="kpi-label">Magnitudo media M<sub>w</sub></div><div class="kpi-value" id="kpiDisaggMw">–</div></div>
           <div class="kpi"><div class="kpi-label">Distanza media R</div><div class="kpi-value" id="kpiDisaggR">–</div><div class="kpi-unit">km</div></div>
@@ -448,7 +536,7 @@
           <div style="overflow-x:auto;">
             <table class="data-table" id="disaggMatrixTable" style="min-width:720px;"></table>
           </div>
-          <div class="disclaimer" style="margin-top:10px;">Percentuali per cella (M<sub>w</sub> × R) generate con un modello bivariato semplificato, calibrato sui valori medi M<sub>w</sub>, R ed ε sopra indicati (illustrativo, non i dati reali di disaggregazione INGV del progetto MPS04/S1 per il nodo esatto). Per un rapporto di disaggregazione ufficiale, consultare il servizio INGV o il report MPS04-S1 per il nodo e il T<sub>R</sub> di interesse.</div>
+          <div class="disclaimer" style="margin-top:10px;">Percentuali per cella (M<sub>w</sub> × R) ottenute da una distribuzione bivariata semplificata centrata sui valori M<sub>w</sub>, R ed ε sopra indicati: <b>rappresentazione illustrativa</b>, non la disaggregazione ufficiale INGV.</div>
         </div>
       </div>
     </div>
@@ -466,7 +554,7 @@
     </div>
 
     <div class="footer-note">
-      SismaSite · Strumento di supporto preliminare secondo D.M. 17/01/2018 (NTC 2018) e Circolare n.7/2019. Non sostituisce la relazione geologica/geotecnica né i valori ufficiali della pericolosità sismica INGV.
+      <span id="footerVersion">SismaSite</span> · Strumento di supporto preliminare secondo D.M. 17/01/2018 (NTC 2018), Circolare n.7/2019 e Allegati A e B al D.M. 14/01/2008. Non sostituisce la relazione geologica/geotecnica né i valori ufficiali della pericolosità sismica INGV.
     </div>
   </div>
 </div>
@@ -547,6 +635,100 @@ function syncMapFromFields(){
           F0:[ 9 array di N valori ], Tc:[ 9 array di N valori ] }
    convert_grid.py genera per default il formato C.
 ====================================================================== */
+/* ======================================================================
+   ISOLE — Allegato B, TABELLA 2 (NTC 2008 recepite dalle NTC 2018)
+   Per tutte le isole, con l'esclusione di Sicilia, Ischia, Procida e Capri,
+   NON esiste un reticolo: i valori di ag, F0, T*C sono costanti su tutto il
+   territorio di ciascuna isola. Senza questa tabella l'app interpolava i nodi
+   della costa (es. Sardegna: ag 0.044 g invece di 0.050 g a TR=475,
+   F0 2.50 invece di 2.88, T*C 0.312 invece di 0.340).
+   NB: nella Tabella 2 ufficiale ag è espresso in g/10 -> qui è già diviso per 10.
+====================================================================== */
+const ISLAND_TABLE = {
+  // Arcipelago Toscano, Isole Egadi, Pantelleria, Sardegna, Lampedusa, Linosa, Ponza, Palmarola, Zannone
+  A:{name:'Arcipelago Toscano / Egadi / Pantelleria / Sardegna / Pelagie / Ponza',
+     ag:[0.0186,0.0235,0.0274,0.0314,0.0351,0.0393,0.0500,0.0603,0.0747],
+     F0:[2.61,2.67,2.70,2.73,2.78,2.82,2.88,2.98,3.09],
+     Tc:[0.273,0.296,0.303,0.307,0.313,0.322,0.340,0.372,0.401]},
+  // Ventotene, Santo Stefano
+  B:{name:'Ventotene / Santo Stefano',
+     ag:[0.0239,0.0303,0.0347,0.0389,0.0430,0.0481,0.0600,0.0707,0.0852],
+     F0:[2.61,2.61,2.61,2.66,2.69,2.71,2.92,3.07,3.27],
+     Tc:[0.245,0.272,0.298,0.326,0.366,0.401,0.476,0.517,0.564]},
+  // Ustica, Tremiti
+  C:{name:'Ustica / Tremiti',
+     ag:[0.0429,0.0554,0.0661,0.0776,0.0901,0.1056,0.1500,0.1967,0.2725],
+     F0:[2.50,2.50,2.50,2.50,2.50,2.50,2.50,2.50,2.50],
+     Tc:[0.400,0.400,0.400,0.400,0.400,0.400,0.400,0.400,0.400]},
+  // Alicudi, Filicudi
+  D:{name:'Alicudi / Filicudi',
+     ag:[0.0350,0.0558,0.0807,0.1020,0.1214,0.1460,0.2471,0.3212,0.4077],
+     F0:[2.70,2.70,2.70,2.70,2.70,2.70,2.70,2.70,2.70],
+     Tc:[0.400,0.400,0.400,0.400,0.400,0.400,0.400,0.400,0.400]},
+  // Panarea, Stromboli, Lipari, Vulcano, Salina
+  E:{name:'Panarea / Stromboli / Lipari / Vulcano / Salina',
+     ag:[0.0618,0.0817,0.0983,0.1166,0.1354,0.1580,0.2200,0.2823,0.3746],
+     F0:[2.45,2.48,2.51,2.52,2.56,2.56,2.58,2.65,2.76],
+     Tc:[0.287,0.290,0.294,0.290,0.290,0.292,0.306,0.316,0.324]}
+};
+// Riconoscimento dell'isola: elenco puntuale (centro + raggio) invece di
+// bounding box, per non attribuire valori tabellari alla costa antistante
+// (es. Piombino/Argentario rispetto all'Elba o al Giglio).
+// La Sardegna, troppo estesa per un raggio, usa un poligono rettangolare che
+// resta a sud del Capo Pertusato (Corsica) e include l'Asinara e la Maddalena.
+const ISLAND_SITES = [
+  // gruppo A — Arcipelago Toscano, Egadi, Pantelleria, Sardegna, Pelagie, Ponza
+  {key:'A', nome:'Elba',          lat:42.77, lon:10.24, r:16},
+  {key:'A', nome:'Pianosa',       lat:42.58, lon:10.08, r:3},
+  {key:'A', nome:'Capraia',       lat:43.04, lon:9.84,  r:3},
+  {key:'A', nome:'Gorgona',       lat:43.42, lon:9.90,  r:2},
+  {key:'A', nome:'Giglio',        lat:42.36, lon:10.90, r:4},
+  {key:'A', nome:'Giannutri',     lat:42.24, lon:11.10, r:2},
+  {key:'A', nome:'Montecristo',   lat:42.33, lon:10.31, r:2},
+  {key:'A', nome:'Favignana',     lat:37.93, lon:12.32, r:6},
+  {key:'A', nome:'Levanzo',       lat:38.00, lon:12.34, r:3},
+  {key:'A', nome:'Marettimo',     lat:37.97, lon:12.06, r:4},
+  {key:'A', nome:'Pantelleria',   lat:36.79, lon:11.99, r:12},
+  {key:'A', nome:'Lampedusa',     lat:35.51, lon:12.60, r:5},
+  {key:'A', nome:'Linosa',        lat:35.87, lon:12.87, r:2},
+  {key:'A', nome:'Ponza',         lat:40.90, lon:12.96, r:4},
+  {key:'A', nome:'Palmarola',     lat:40.94, lon:12.85, r:2},
+  {key:'A', nome:'Zannone',       lat:40.97, lon:13.05, r:1.5},
+  // gruppo B — Ventotene, Santo Stefano
+  {key:'B', nome:'Ventotene',     lat:40.79, lon:13.43, r:2},
+  {key:'B', nome:'Santo Stefano', lat:40.79, lon:13.47, r:1.5},
+  // gruppo C — Ustica, Tremiti
+  {key:'C', nome:'Ustica',        lat:38.71, lon:13.18, r:4},
+  {key:'C', nome:'Tremiti',       lat:42.12, lon:15.51, r:5},
+  // gruppo D — Alicudi, Filicudi
+  {key:'D', nome:'Alicudi',       lat:38.54, lon:14.35, r:2},
+  {key:'D', nome:'Filicudi',      lat:38.57, lon:14.55, r:3},
+  // gruppo E — Panarea, Stromboli, Lipari, Vulcano, Salina
+  {key:'E', nome:'Panarea',       lat:38.63, lon:15.07, r:2},
+  {key:'E', nome:'Stromboli',     lat:38.80, lon:15.24, r:3},
+  {key:'E', nome:'Lipari',        lat:38.47, lon:14.95, r:7},
+  {key:'E', nome:'Vulcano',       lat:38.40, lon:14.96, r:3},
+  {key:'E', nome:'Salina',        lat:38.56, lon:14.85, r:4}
+];
+// Sardegna: rettangolo che resta a sud del Capo Pertusato (Corsica)
+const SARDEGNA_BOX = {lat:[38.85, 41.30], lon:[8.10, 9.85]};
+
+function islandAt(lat, lon){
+  if(lat>=SARDEGNA_BOX.lat[0] && lat<=SARDEGNA_BOX.lat[1] &&
+     lon>=SARDEGNA_BOX.lon[0] && lon<=SARDEGNA_BOX.lon[1]){
+    return {tab: ISLAND_TABLE['A'], nome: 'Sardegna'};
+  }
+  for(const isl of ISLAND_SITES){
+    if(haversineKm(lat, lon, isl.lat, isl.lon) <= isl.r){
+      return {tab: ISLAND_TABLE[isl.key], nome: isl.nome};
+    }
+  }
+  return null;
+}
+
+const APP_VERSION = '1.2.0';
+const APP_VERSION_DATE = '2026-10-23';
+
 let GRID = null;      // rappresentazione interna unificata: {meta, count, id[], lon[], lat[], ag[t][i], F0[t][i], Tc[t][i]}
 let gridLoadError = null;
 
@@ -625,7 +807,7 @@ function updateGridStatusLabel(sourceLabel){
   const n = GRID.count;
 
   if(gridLoadError){
-    el.innerHTML = `<b>grid-data.json non è stato caricato</b> (reticolo di riserva interno con ${n} nodi in uso). ` +
+    el.innerHTML = `<b>grid-data.json non è stato caricato: il calcolo è disattivato.</b> ` +
       `Se la pagina è aperta come file locale, avvia un server locale (es. <code>python3 -m http.server</code>) e riprova.`;
     return;
   }
@@ -699,18 +881,55 @@ function spatialInterp(lat, lon, trIndex, k=4){
   return { ag: agSum/wSum, F0: f0Sum/wSum, Tc: tcSum/wSum };
 }
 
-// Interpolazione log-log (di potenza) tra due valori riferiti a TR1 < TR < TR2
+/* Nodi del reticolo effettivamente usati per l'interpolazione (per tracciabilità
+   nel report): stessi k nodi "più vicini" di spatialInterp, con ID e distanza. */
+function nearestNodes(lat, lon, k=4){
+  const dists = getDistances(lat, lon);
+  const N = GRID.count;
+  const nearest = [];
+  for(let i=0;i<N;i++){
+    if(nearest.length < k){
+      nearest.push(i);
+      if(nearest.length === k) nearest.sort((a,b)=>dists[a]-dists[b]);
+    } else if(dists[i] < dists[nearest[k-1]]){
+      nearest[k-1] = i;
+      for(let j=k-1;j>0 && dists[nearest[j]]<dists[nearest[j-1]];j--){
+        [nearest[j],nearest[j-1]] = [nearest[j-1],nearest[j]];
+      }
+    }
+  }
+  return nearest.map(i=>({id:GRID.id[i], lat:GRID.lat[i], lon:GRID.lon[i], d:dists[i]}));
+}
+
+// Interpolazione log-log (di potenza) tra valori riferiti a TR1 < TR < TR2
 function logInterp(v1, v2, TR1, TR2, TR){
   if(v1<=0 || v2<=0) return v1 + (v2-v1)*((TR-TR1)/(TR2-TR1)); // fallback lineare
   const k = Math.log(TR/TR1)/Math.log(TR2/TR1);
   return v1*Math.pow(v2/v1, k);
 }
 
-// Restituisce {ag, F0, Tc0} per il sito e il TR desiderato, tramite doppia interpolazione
+// Restituisce {ag, F0, Tc0, fonte, fuoriReticolo, trClampato}
 function hazardAtTR(lat, lon, TR){
   const trRef = GRID.meta.trValues;
   const TRc = clamp(TR, trRef[0], trRef[trRef.length-1]);
+  const trClampato = (TRc !== TR);
 
+  // 1) ISOLE: valori costanti da Allegato B, Tabella 2 (nessun reticolo)
+  const isl = islandAt(lat, lon);
+  if(isl){
+    let i = 0;
+    while(i < trRef.length-2 && trRef[i+1] < TRc) i++;
+    const TR1 = trRef[i], TR2 = trRef[i+1];
+    return {
+      ag : logInterp(isl.tab.ag[i], isl.tab.ag[i+1], TR1, TR2, TRc),
+      F0 : logInterp(isl.tab.F0[i], isl.tab.F0[i+1], TR1, TR2, TRc),
+      Tc0: logInterp(isl.tab.Tc[i], isl.tab.Tc[i+1], TR1, TR2, TRc),
+      fonte:'Allegato B, Tabella 2 (isole) — ' + isl.nome,
+      fuoriReticolo:false, trClampato
+    };
+  }
+
+  // 2) Reticolo di riferimento
   let i = 0;
   while(i < trRef.length-2 && trRef[i+1] < TRc) i++;
   const TR1 = trRef[i], TR2 = trRef[i+1];
@@ -722,7 +941,21 @@ function hazardAtTR(lat, lon, TR){
   const F0  = logInterp(p1.F0,  p2.F0,  TR1, TR2, TRc);
   const Tc0 = logInterp(p1.Tc,  p2.Tc,  TR1, TR2, TRc);
 
-  return { ag: clamp(ag, 0.005, 0.8), F0: clamp(F0, 2.0, 3.2), Tc0: clamp(Tc0, 0.1, 0.8) };
+  // 3) Controllo di copertura: se il nodo più vicino dista più di ~15 km
+  //    (reticolo a maglia <= 10 km) il punto è fuori dal dominio di validita'
+  const dists = getDistances(lat, lon);
+  let dmin = Infinity;
+  for(let k=0;k<dists.length;k++) if(dists[k] < dmin) dmin = dists[k];
+
+  return {
+    ag : clamp(ag, 0.005, 0.9),   // clamp solo di sicurezza numerica, non normativo
+    F0 : clamp(F0, 2.0, 4.5),
+    Tc0: clamp(Tc0, 0.1, 0.8),
+    fonte:'Reticolo di riferimento (10.751 nodi)',
+    fuoriReticolo: dmin > 15,
+    distanzaNodo: dmin,
+    trClampato
+  };
 }
 
 /* ======================================================================
@@ -769,21 +1002,79 @@ function seHorizontal(T, ag, S, F0, Tb, Tc, Td, eta){
   return ag*S*eta*F0*(Tc*Td/(T*T));
 }
 
-/* Spettro elastico verticale Sve(T) — Circolare NTC2018, parametri fissi */
-function seVertical(T, ag, F0, eta){
+/* Spettro elastico verticale Sve(T) — NTC2018 §3.2.3.2.2 e Tab. 3.2.VI.
+   ATTENZIONE: per la componente verticale Ss = 1,0 per qualunque categoria di
+   sottosuolo, mentre St resta quello della Tab. 3.2.V (condizioni topografiche).
+   La versione precedente passava S = Ss,orizz * St (o S=1), sovrastimando lo
+   spettro verticale dal +20% al +50%. */
+function seVertical(T, ag, F0, eta, St){
   const Fv = 1.35*F0*Math.pow(ag,0.5);
+  const S = (St===undefined ? 1.0 : St);   // Ss = 1,0 ; St da Tab. 3.2.V
   const TbV=0.05, TcV=0.15, TdV=1.0;
-  if(T < TbV) return ag*1.0*eta*Fv*(T/TbV + (1/(eta*Fv))*(1-T/TbV));
-  if(T < TcV) return ag*1.0*eta*Fv;
-  if(T < TdV) return ag*1.0*eta*Fv*(TcV/T);
-  return ag*1.0*eta*Fv*(TcV*TdV/(T*T));
+  if(T < TbV) return ag*S*eta*Fv*(T/TbV + (1/(eta*Fv))*(1-T/TbV));
+  if(T < TcV) return ag*S*eta*Fv;
+  if(T < TdV) return ag*S*eta*Fv*(TcV/T);
+  return ag*S*eta*Fv*(TcV*TdV/(T*T));
+}
+
+/* ======================================================================
+   3-bis. SPETTRI DI PROGETTO S_d(T) — NTC 2018 §3.2.3.4 e §3.2.3.5
+
+   §3.2.3.4 (SLO): lo spettro di progetto coincide con quello ELASTICO
+   (q = 1,0), sia per le componenti orizzontali sia per la verticale.
+
+   §3.2.3.5 (SLD, SLV, SLC): per l'analisi lineare le ordinate dello spettro
+   elastico si riducono sostituendo η con 1/q nelle formule [3.2.2]
+   (componenti orizzontali) e [3.2.8] (componente verticale). Poiché η compare
+   anche nel ramo iniziale, la sostituzione NON equivale a una semplice
+   divisione per q: si ha, per 0 ≤ T < T_B,
+       S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)·(1 − T/T_B)]
+   mentre per T ≥ T_B tutte le ordinate valgono S_e(T)/q.
+   In ogni caso (nota della norma):  S_d(T) ≥ 0,2·a_g.
+====================================================================== */
+const Q_VERTICALE = 1.5;   // componente verticale: q = 1,5 in assenza di analisi specifiche
+
+/* Per SLO lo spettro di progetto è quello elastico per ENTRAMBE le componenti
+   (§3.2.3.4), quindi anche la verticale usa q = 1,0. */
+function qAdottato(codeQ, qInput){ return codeQ === 'SLO' ? 1.0 : qInput; }
+function qVerticaleAdottato(codeQ){ return codeQ === 'SLO' ? 1.0 : Q_VERTICALE; }
+
+function seDesignHorizontal(T, r, q){
+  const eta = 1/q;   // sostituzione η -> 1/q nelle formule [3.2.2]
+  return Math.max(seHorizontal(T, r.ag, r.S, r.F0, r.Tb, r.Tc, r.Td, eta), 0.2*r.ag);
+}
+
+function seDesignVertical(T, r, q){
+  const eta = 1/q;   // sostituzione η -> 1/q nelle formule [3.2.8]
+  return Math.max(seVertical(T, r.ag, r.F0, eta, r.St), 0.2*r.ag);
 }
 
 /* ======================================================================
    4. CHART.JS
+   Le librerie arrivano da CDN: se non sono raggiungibili (uso offline, proxy
+   aziendale, ad-blocker) il calcolo deve comunque funzionare e i pannelli
+   devono mostrare un messaggio al posto del grafico, senza eccezioni.
 ====================================================================== */
+function chartDisponibile(){ return typeof Chart !== 'undefined'; }
+
+function mostraGraficoNonDisponibile(containerSelector, altezza){
+  const canvas = document.querySelector(containerSelector);
+  if(!canvas) return;
+  // il contenuto di un <canvas> non viene renderizzato: si sostituisce il
+  // contenitore del grafico, non il canvas
+  const box = canvas.closest('.chart-wrap') || canvas.parentElement;
+  if(!box || box.dataset.noChart === '1') return;
+  box.dataset.noChart = '1';
+  box.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:${altezza || 120}px;
+      text-align:center; padding:14px; font-size:12.5px; color:var(--warn); background:var(--warn-bg);
+      border:1px solid #eecba3; border-radius:3px;">
+      Grafico non disponibile: la libreria Chart.js non è stata caricata (CDN irraggiungibile).
+      I valori numerici restano validi e sono riportati nelle tabelle.</div>`;
+}
+
 let spectrumChart = null;
 function buildSpectrumChart(TArray, hSeries, vSeries, mode){
+  if(!chartDisponibile()){ mostraGraficoNonDisponibile('#spectrumChart', 260); return; }
   const ctx = document.getElementById('spectrumChart').getContext('2d');
   const datasets = [];
   if(mode==='both' || mode==='h'){
@@ -814,6 +1105,12 @@ function buildSpectrumChart(TArray, hSeries, vSeries, mode){
 ====================================================================== */
 document.getElementById('liqEnable').addEventListener('change', e=>{
   document.getElementById('liqFields').style.display = e.target.checked ? 'block' : 'none';
+  // ricalcola subito lo screening, senza dover ripremere "Calcola"
+  if(lastResults) renderLiquefaction();
+});
+['gwDepth','soilType'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ if(lastResults) renderLiquefaction(); });
+  document.getElementById(id).addEventListener('change', ()=>{ if(lastResults) renderLiquefaction(); });
 });
 
 /* ======================================================================
@@ -822,6 +1119,26 @@ document.getElementById('liqEnable').addEventListener('change', e=>{
 let lastResults = null; // { lat, lon, VR, byLS: {SLO:{...}, ...} }
 
 function runCalculation(){
+  // Se grid-data.json non è disponibile NON si calcola nulla: con il reticolo
+  // di riserva a 3 nodi qualunque punto d'Italia restituirebbe i valori
+  // dell'Aquila, cioè numeri privi di significato ma dall'aspetto plausibile.
+  if(gridLoadError || !GRID || GRID.count < 100){
+    document.getElementById('warnBox').innerHTML =
+      `<div class="alert alert-danger"><span class="alert-title">Calcolo non eseguito: reticolo di riferimento non caricato</span>
+       Il file <code>grid-data.json</code> non è stato caricato (${gridLoadError ? gridLoadError.message : 'griglia incompleta'}),
+       quindi non è possibile calcolare i parametri di pericolosità sismica. Il reticolo di riserva interno contiene solo
+       ${GRID ? GRID.count : 0} nodi dimostrativi e non è idoneo al calcolo.
+       <br>Avvia un server locale nella cartella dell'app (es. <code>python3 -m http.server</code>) e apri la pagina da
+       <code>http://localhost:8000/</code>. Se la pagina è pubblicata online, verifica che <code>grid-data.json</code>
+       sia presente e raggiungibile.</div>`;
+    ['kpiS','kpiAmax','kpiKh','kpiKv'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='–'; });
+    ['hazardTableBody','ampliTableBody','liqResult'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=''; });
+    const rh=['rhSite','rhDate','rhVersion','rhCoords','rhSource','rhNodes'];
+    rh.forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='–'; });
+    lastResults = null;
+    return;
+  }
+
   const lat = parseFloat(document.getElementById('lat').value);
   const lon = parseFloat(document.getElementById('lon').value);
   const soilCat = document.getElementById('soilCat').value;
@@ -860,23 +1177,81 @@ function runCalculation(){
     if(soilCat==='A'){
       if(agg <= 0.1) betam = 0.20;
       else if(agg <= 0.2) betam = 0.27;
-      else betam = 0.30;
+      else if(agg <= 0.4) betam = 0.30;
+      else betam = 0.36;                    // FIX: fascia ag > 0.4 g (Tab. 7.11.I)
     } else {
       if(agg <= 0.1) betam = 0.20;
       else if(agg <= 0.2) betam = 0.24;
-      else betam = 0.28;
+      else if(agg <= 0.4) betam = 0.28;
+      else betam = 0.32;                    // FIX: fascia ag > 0.4 g (Tab. 7.11.I)
     }
     const kh = betam*amax;
     const kv = 0.5*kh;
 
-    byLS[ls.code] = {TR, ag:agg, F0:hz.F0, Tc0:hz.Tc0, Ss, St, Cc, Tc, Tb, Td, S, amax, kh, kv, eta};
+    byLS[ls.code] = {TR, ag:agg, F0:hz.F0, Tc0:hz.Tc0, Ss, St, Cc, Tc, Tb, Td, S, amax, kh, kv, eta,
+                     fonte:hz.fonte, fuoriReticolo:hz.fuoriReticolo,
+                     distanzaNodo:hz.distanzaNodo, trClampato:hz.trClampato, TRrichiesto:TR};
   });
 
   lastResults = {lat, lon, VR, VN, CU, soilCat, topoCat, damping, eta, byLS};
+  renderWarnings();
+  updateReportHeader();
   renderHazardTable();
   renderSelectedLS();
   refreshDisaggregation();
   renderLiquefaction();
+}
+
+/* Intestazione del report: sito, data, versione, coordinate, fonte, nodi usati.
+   Serve a rendere il PDF allegabile a una relazione (tracciabilità del calcolo). */
+function italianDate(d){
+  return d.toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit', year:'numeric'}) +
+         ' ' + d.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+}
+
+function updateReportHeader(){
+  if(!lastResults) return;
+  const nome = (document.getElementById('siteName').value || '').trim();
+  const r = lastResults.byLS['SLV'];
+
+  document.getElementById('rhSite').textContent = nome || '(non specificato)';
+  document.getElementById('rhDate').textContent = italianDate(new Date());
+  document.getElementById('rhVersion').textContent = APP_VERSION + ' del ' + APP_VERSION_DATE;
+  document.getElementById('rhCoords').textContent =
+    lastResults.lat.toFixed(5) + ' N, ' + lastResults.lon.toFixed(5) + ' E';
+  document.getElementById('rhSource').textContent = r.fonte || 'reticolo di riferimento';
+
+  if(r.fonte && r.fonte.indexOf('Tabella 2') >= 0){
+    document.getElementById('rhNodes').textContent =
+      'nessun nodo: valori costanti da Allegato B, Tabella 2 (isole)';
+  } else {
+    const nodi = nearestNodes(lastResults.lat, lastResults.lon, 4);
+    document.getElementById('rhNodes').textContent = nodi
+      .map(n=>'ID ' + n.id + ' (' + n.lat.toFixed(4) + ' N, ' + n.lon.toFixed(4) + ' E; '
+              + n.d.toFixed(2).replace('.', ',') + ' km)')
+      .join('  ·  ');
+  }
+  document.getElementById('footerVersion').textContent =
+    'SismaSite v' + APP_VERSION + ' (' + APP_VERSION_DATE + ')';
+}
+
+/* Messaggi di avviso: copertura del reticolo, isole, TR fuori intervallo */
+function renderWarnings(){
+  const box = document.getElementById('warnBox');
+  if(!box) return;
+  const msgs = [];
+  const r = lastResults.byLS['SLV'];
+  if(r.fuoriReticolo){
+    msgs.push(`<b>Punto fuori dal reticolo di riferimento.</b> Il nodo più vicino dista ${r.distanzaNodo.toFixed(0)} km: la copertura ufficiale è limitata al territorio nazionale (maglia ≤ 10 km, escluse le isole minori). I valori mostrati sono un'estrapolazione e <b>non sono utilizzabili</b> ai fini delle NTC.`);
+  }
+  if(r.fonte && r.fonte.indexOf('Tabella 2') >= 0){
+    msgs.push(`<b>Valori da Allegato B – Tabella 2 (isole).</b> ${r.fonte}.`);
+  }
+  const trOut = Object.values(lastResults.byLS).filter(x=>x.trClampato);
+  if(trOut.length){
+    msgs.push(`<b>T<sub>R</sub> fuori dall'intervallo tabulato (30–2475 anni).</b> Per ${trOut.map(x=>x.TRrichiesto.toFixed(0)).join(', ')} anni il periodo di ritorno è stato limitato all'estremo dell'intervallo, come previsto dall'Allegato A (nota 1).`);
+  }
+  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="alert alert-warn" style="margin:0 0 10px;">${m}</div>`).join('') : '';
 }
 
 function fmt(v, d=3){ return (isFinite(v) ? v.toFixed(d) : '–'); }
@@ -926,10 +1301,125 @@ function renderSelectedLS(){
   for(let T=0; T<=Tmax+1e-9; T+=step){
     TArray.push(T);
     hSeries.push(seHorizontal(T, r.ag, r.S, r.F0, r.Tb, r.Tc, r.Td, r.eta));
-    vSeries.push(seVertical(T, r.ag, r.F0, r.eta));
+    vSeries.push(seVertical(T, r.ag, r.F0, r.eta, r.St));
   }
   const mode = document.getElementById('spectrumMode').value;
   buildSpectrumChart(TArray, hSeries, vSeries, mode);
+  renderDesignPanel();
+}
+
+/* ======================================================================
+   6-bis. RENDER DEL PANNELLO SPETTRI DI PROGETTO
+====================================================================== */
+let designChart = null;
+
+function renderDesignPanel(){
+  if(!lastResults) return;
+  const code = document.getElementById('lsSelect').value;
+  const r = lastResults.byLS[code];
+
+  let qIn = parseFloat(document.getElementById('qFactor').value);
+  if(!isFinite(qIn) || qIn < 1) qIn = 1.0;
+  if(qIn > 6) qIn = 6;
+  const q  = qAdottato(code, qIn);
+  const qv = qVerticaleAdottato(code);
+
+  document.getElementById('designQLabel').textContent = q.toFixed(1).replace('.', ',');
+
+  // --- serie di dati ---
+  const Tmax = 4.0, step = 0.02;
+  const TArray = [], seH = [], sdH = [], seV = [], sdV = [];
+  for(let T=0; T<=Tmax+1e-9; T+=step){
+    TArray.push(T);
+    seH.push(seHorizontal(T, r.ag, r.S, r.F0, r.Tb, r.Tc, r.Td, r.eta));
+    sdH.push(seDesignHorizontal(T, r, q));
+    seV.push(seVertical(T, r.ag, r.F0, r.eta, r.St));
+    sdV.push(seDesignVertical(T, r, qv));
+  }
+
+  const mode = document.getElementById('designMode').value;
+  const datasets = [];
+  if(mode==='both' || mode==='h'){
+    datasets.push({label:'S_e orizzontale (elastico)', data:seH, borderColor:'#9ec2e8',
+                   borderDash:[5,4], backgroundColor:'transparent', borderWidth:1.5, pointRadius:0});
+    datasets.push({label:'S_d orizzontale (progetto)', data:sdH, borderColor:'#1f5fab',
+                   backgroundColor:'transparent', borderWidth:2.4, pointRadius:0});
+  }
+  if(mode==='both' || mode==='v'){
+    datasets.push({label:'S_ve verticale (elastico)', data:seV, borderColor:'#e0b393',
+                   borderDash:[5,4], backgroundColor:'transparent', borderWidth:1.5, pointRadius:0});
+    datasets.push({label:'S_dv verticale (progetto)', data:sdV, borderColor:'#b5501a',
+                   backgroundColor:'transparent', borderWidth:2.4, pointRadius:0});
+  }
+
+  if(!chartDisponibile()) mostraGraficoNonDisponibile('#designChart', 260);
+  const ctx = chartDisponibile() ? document.getElementById('designChart').getContext('2d') : null;
+  if(designChart){ designChart.destroy(); designChart = null; }
+  if(!ctx){ renderDesignTablesOnly(r, q, qv, code); return; }
+  designChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:TArray.map(t=>t.toFixed(2)), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:200},
+      interaction:{mode:'index', intersect:false},
+      plugins:{ legend:{display:false},
+                tooltip:{callbacks:{ title:(items)=>'T = '+items[0].label+' s',
+                                     label:(it)=>`${it.dataset.label}: ${it.parsed.y.toFixed(4)} g` }} },
+      scales:{
+        x:{ title:{display:true, text:'Periodo T (s)'}, ticks:{maxTicksLimit:12} },
+        y:{ title:{display:true, text:'Accelerazione spettrale S_d (g)'}, beginAtZero:true }
+      }
+    }
+  });
+
+  document.getElementById('designLegend').innerHTML = [
+    '<span><span class="legend-swatch" style="background:#9ec2e8;"></span>S<sub>e</sub> elastico (tratteggiato)</span>',
+    '<span><span class="legend-swatch" style="background:#1f5fab;"></span>S<sub>d</sub> di progetto, orizzontale — q = ' + q.toFixed(1).replace('.', ',') + '</span>',
+    '<span><span class="legend-swatch" style="background:#b5501a;"></span>S<sub>d,v</sub> di progetto, verticale — q = ' + qv.toFixed(1).replace('.', ',') + '</span>'
+  ].join('');
+
+  renderDesignTablesOnly(r, q, qv, code);
+}
+
+/* Tabella di sintesi e nota metodologica del pannello S_d. Estratta perché
+   deve essere popolata anche quando Chart.js non è disponibile. */
+function renderDesignTablesOnly(r, q, qv, code){
+  const Tmax = 4.0, step = 0.02;
+  const sdH = [], sdV = [];
+  for(let T=0; T<=Tmax+1e-9; T+=step){
+    sdH.push(seDesignHorizontal(T, r, q));
+    sdV.push(seDesignVertical(T, r, qv));
+  }
+
+  // --- tabella di sintesi ---
+  const f = (v)=>v.toFixed(4).replace('.', ',');
+  const minD = 0.2*r.ag;
+  const govH = Math.min(...sdH) <= minD + 1e-9;
+  const govV = Math.min(...sdV) <= minD + 1e-9;
+  document.getElementById('designTableBody').innerHTML = `
+    <tr><td>Fattore di comportamento q</td><td>${q.toFixed(1).replace('.', ',')}</td><td>${qv.toFixed(1).replace('.', ',')}</td></tr>
+    <tr><td>S<sub>d</sub>(T = 0)</td><td>${f(sdH[0])}</td><td>${f(sdV[0])}</td></tr>
+    <tr><td>Plateau S<sub>d</sub>(T<sub>B</sub> ÷ T<sub>C</sub>)</td><td>${f(seDesignHorizontal(r.Tb + 1e-6, r, q))}</td><td>${f(seDesignVertical(0.10, r, qv))}</td></tr>
+    <tr><td>S<sub>d</sub>(T = 1,0 s)</td><td>${f(seDesignHorizontal(1.0, r, q))}</td><td>${f(seDesignVertical(1.0, r, qv))}</td></tr>
+    <tr><td>S<sub>d</sub>(T = 2,0 s)</td><td>${f(seDesignHorizontal(2.0, r, q))}</td><td>${f(seDesignVertical(2.0, r, qv))}</td></tr>
+    <tr><td>Minimo S<sub>d</sub> ≥ 0,2·a<sub>g</sub></td><td colspan="2">${f(minD)} g ${(govH||govV) ? '— <b>il minimo governa</b> parte dello spettro' : '— non attivo'}</td></tr>
+  `;
+
+  // --- nota metodologica ---
+  let nota;
+  if(code === 'SLO'){
+    nota = `<b>SLO (§3.2.3.4):</b> lo spettro di progetto coincide con quello elastico, per entrambe le componenti
+            (q = 1,0 indipendentemente dal valore inserito).`;
+  } else {
+    nota = `<b>${code} (§3.2.3.5):</b> le ordinate si ottengono sostituendo η con 1/q nelle formule [3.2.2] e [3.2.8]
+            (analisi lineare). Nel primo tratto la riduzione non è una semplice divisione per q, perché η compare anche
+            nel termine correttivo.`;
+  }
+  nota += ` Assunto il minimo <b>S<sub>d</sub>(T) ≥ 0,2·a<sub>g</sub></b> previsto dalla norma. Per la componente
+            verticale si adotta <b>q = ${qv.toFixed(1).replace('.', ',')}</b> (${code==='SLO' ? 'pari a 1,0 perché per SLO lo spettro di progetto è quello elastico anche per la componente verticale' : 'valore assunto in assenza di analisi specifiche'}).
+            La scelta e la giustificazione di q (Tab. 7.3.I e 7.3.II — q = q₀·K<sub>R</sub>, con K<sub>R</sub> = 0,8 per
+            costruzioni non regolari in altezza) e l'impiego dello spettro nelle verifiche restano a carico del progettista.`;
+  document.getElementById('designNote').innerHTML = nota;
 }
 
 /* ======================================================================
@@ -950,7 +1440,7 @@ const MW_EDGES = [4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
 const R_EDGES  = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 999];
 const MW_COLORS = ['#dbe7f5','#bcd6ee','#94bde3','#6ea3d6','#4d89c7','#2f7dd6','#1f5fab','#153f73'];
 
-function mwBinLabel(i){ return i === MW_EDGES.length-2 ? `${MW_EDGES[i].toFixed(1)}–${MW_EDGES[i+1].toFixed(1)}` : `${MW_EDGES[i].toFixed(1)}–${MW_EDGES[i+1].toFixed(1)}`; }
+function mwBinLabel(i){ return `${MW_EDGES[i].toFixed(1)}–${MW_EDGES[i+1].toFixed(1)}`; }
 function rBinLabel(i){ return R_EDGES[i+1] > 500 ? `${R_EDGES[i]}+` : `${R_EDGES[i]}–${R_EDGES[i+1]}`; }
 
 // Usa la stessa interpolazione ufficiale (hazardAtTR) già impiegata per gli spettri,
@@ -1015,6 +1505,7 @@ function geoSynthesisNote(Mw, R, eps){
 
 let disaggChart = null;
 function renderDisaggChart(pct){
+  if(!chartDisponibile()){ mostraGraficoNonDisponibile('#disaggChart', 220); return; }
   const ctx = document.getElementById('disaggChart').getContext('2d');
   const rLabels = R_EDGES.slice(0,-1).map((_,i)=>rBinLabel(i));
   const datasets = pct.map((row, mi) => ({
@@ -1166,26 +1657,58 @@ function renderLiquefaction(){
   const soilType = document.getElementById('soilType').value;
   const rSLV = lastResults.byLS['SLV'];
   const amax = rSLV.amax;
+  const nomeTerreno = soilType.replace('_', ' ');
 
-  const looseSand = (soilType === 'sabbia_sciolta');
-  const shallowGW = (gw <= 5.0);
-  const highShake = (amax > 0.10);
+  /* Applica SOLO i criteri di esclusione 1 e 2 del §7.11.3.4.2 delle NTC 2018:
+       1) a_max in campo libero < 0,1 g  -> verifica omissibile
+       2) profondità media stagionale della falda > 15 m dal p.c., per piano
+          campagna sub-orizzontale e strutture con fondazioni superficiali
+          -> verifica omissibile
+     I criteri 3 ((N1)60 > 30 o qc1N > 180) e 4 (granulometria fuori dai fusi
+     della Fig. 7.11.1) richiedono indagini dirette e NON sono applicati. */
+  const omissibileAcc  = (amax < 0.10);
+  const omissibileFalda = (gw > 15.0);
+  const sabbiaSciolta  = (soilType === 'sabbia_sciolta');
 
   let div = document.createElement('div');
-  if(looseSand && shallowGW && highShake){
-    div.className = 'alert alert-danger';
-    div.innerHTML = `<span class="alert-title">Diagnostica preliminare: potenziale liquefacibilita'</span>
-      a<sub>max</sub> = ${amax.toFixed(3)} g &gt; 0.10 g, falda a ${gw.toFixed(1)} m da p.c. (≤ 5 m) e terreno sabbioso sciolto: sussistono le condizioni indicative di innesco secondo i criteri di esclusione semplificati NTC2018 §7.11.3.4.2. <b>Si raccomanda un'analisi di liquefacibilita' approfondita</b> (es. metodo semplificato di Seed &amp; Idriss / Idriss &amp; Boulanger su base CPT/SPT).`;
-  } else if(highShake && (looseSand || shallowGW)){
-    div.className = 'alert alert-warn';
-    div.innerHTML = `<span class="alert-title">Condizioni parzialmente critiche</span>
-      a<sub>max</sub> = ${amax.toFixed(3)} g. Uno solo dei fattori di innesco (falda superficiale o sabbie sciolte) e' presente: si consiglia comunque un approfondimento geotecnico specifico prima di escludere il rischio di liquefazione.`;
-  } else {
+  if(omissibileAcc){
     div.className = 'alert alert-ok';
-    div.innerHTML = `<span class="alert-title">Nessun indicatore preliminare di criticita'</span>
-      In base ai parametri inseriti (a<sub>max</sub> = ${amax.toFixed(3)} g, falda a ${gw.toFixed(1)} m, terreno: ${soilType.replace('_',' ')}) non emergono, a livello di screening, le condizioni tipiche di innesco della liquefazione. Verifica di screening indicativa: non sostituisce l'analisi geotecnica di dettaglio.`;
+    div.innerHTML = `<span class="alert-title">Verifica a liquefazione omissibile — criterio 1, §7.11.3.4.2</span>
+      a<sub>max</sub> in campo libero = <b>${amax.toFixed(3)} g &lt; 0,10 g</b>: la verifica a liquefazione può essere omessa
+      (NTC 2018, §7.11.3.4.2, condizione 1). Resta comunque da valutare la stabilità del sito nei confronti di altri
+      fenomeni (cedimenti, amplificazione locale).`;
+  } else if(omissibileFalda){
+    div.className = 'alert alert-ok';
+    div.innerHTML = `<span class="alert-title">Verifica a liquefazione omissibile — criterio 2, §7.11.3.4.2</span>
+      a<sub>max</sub> = ${amax.toFixed(3)} g e falda a <b>${gw.toFixed(1)} m &gt; 15 m</b> dal piano campagna:
+      la verifica può essere omessa (NTC 2018, §7.11.3.4.2, condizione 2), <b>a condizione che</b> il piano campagna
+      sia sub-orizzontale e le strutture abbiano fondazioni superficiali. Se queste ipotesi non valgono, la verifica è
+      comunque necessaria.`;
+  } else if(sabbiaSciolta){
+    div.className = 'alert alert-danger';
+    div.innerHTML = `<span class="alert-title">Verifica a liquefazione NON omissibile: necessario il calcolo di F<sub>S</sub></span>
+      a<sub>max</sub> = ${amax.toFixed(3)} g ≥ 0,10 g e falda a ${gw.toFixed(1)} m ≤ 15 m: nessuno dei criteri di esclusione
+      1 e 2 è soddisfatto. Con terreno prevalentemente <b>sabbioso sciolto</b> sotto falda ricorrono le condizioni tipiche
+      di suscettibilità del §7.11.3.4.3: va <b>calcolato il coefficiente di sicurezza alla liquefazione</b> alle profondità
+      dei terreni liquefacibili (metodo storico-empirico tipo Seed &amp; Idriss / Idriss &amp; Boulanger su base CPT/SPT),
+      oppure va dimostrata l'esclusione con i criteri 3 o 4.`;
+  } else {
+    div.className = 'alert alert-warn';
+    div.innerHTML = `<span class="alert-title">Verifica a liquefazione NON omissibile: approfondimento necessario</span>
+      a<sub>max</sub> = ${amax.toFixed(3)} g ≥ 0,10 g e falda a ${gw.toFixed(1)} m ≤ 15 m: i criteri di esclusione 1 e 2
+      non sono soddisfatti. Il terreno indicato (${nomeTerreno}) non è tra i più suscettibili, ma l'esclusione va
+      dimostrata con il criterio 3 ((N<sub>1</sub>)<sub>60</sub> &gt; 30 oppure q<sub>c1N</sub> &gt; 180) o con il
+      criterio 4 (granulometria esterna ai fusi di Fig. 7.11.1). In assenza di indagini, si procede al calcolo di F<sub>S</sub>.`;
   }
   box.appendChild(div);
+
+  const nota = document.createElement('div');
+  nota.className = 'disclaimer';
+  nota.innerHTML = '<b>Perimetro dello screening.</b> Sono applicati solo i criteri di esclusione 1 e 2 del §7.11.3.4.2. ' +
+    'I criteri 3 ((N<sub>1</sub>)<sub>60</sub>, q<sub>c1N</sub>) e 4 (granulometria) richiedono prove in sito o di laboratorio e ' +
+    'non sono verificati da questa app. La verifica completa (F<sub>S</sub>) e la scelta di eventuali interventi di ' +
+    'miglioramento sono di competenza del progettista geotecnico.';
+  box.appendChild(nota);
 }
 
 /* ======================================================================
@@ -1197,6 +1720,12 @@ document.getElementById('lsSelect').addEventListener('change', ()=>{
   refreshDisaggregation();
 });
 document.getElementById('spectrumMode').addEventListener('change', renderSelectedLS);
+document.getElementById('designMode').addEventListener('change', renderDesignPanel);
+document.getElementById('qFactor').addEventListener('input', renderDesignPanel);
+document.getElementById('siteName').addEventListener('input', ()=>{
+  document.getElementById('rhSite').textContent =
+    (document.getElementById('siteName').value || '').trim() || '(non specificato)';
+});
 document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
 
 // Ridisegna i grafici Chart.js alle dimensioni della vista di stampa prima
@@ -1204,6 +1733,7 @@ document.getElementById('btnPrint').addEventListener('click', ()=>window.print()
 // congelati alla risoluzione dello schermo e apparire tagliati o sfocati.
 window.addEventListener('beforeprint', ()=>{
   if(spectrumChart) spectrumChart.resize();
+  if(designChart) designChart.resize();
   if(disaggChart) disaggChart.resize();
 });
 
@@ -1215,12 +1745,18 @@ window.addEventListener('load', async ()=>{
   btn.disabled = false; btn.textContent = 'Calcola parametri sismici';
 
   if(gridLoadError){
+    btn.disabled = true; btn.textContent = 'Reticolo non disponibile';
+    btn.title = 'grid-data.json non caricato: il calcolo è disattivato';
     const note = document.createElement('div');
-    note.className = 'alert alert-warn';
-    note.style.margin = '0 16px 16px';
-    note.innerHTML = `<span class="alert-title">grid-data.json non caricato</span>
-      In uso il reticolo di riserva interno (3 nodi). Se hai aperto il file con un doppio click, il browser blocca il caricamento di file locali via fetch(): avvia un piccolo server locale (es. <code>python3 -m http.server</code> nella cartella dell'app) e apri la pagina da <code>http://localhost:8000/</code>.`;
-    document.querySelector('.col-output').insertBefore(note, document.querySelector('.col-output').firstChild);
+    note.className = 'alert alert-danger';
+    note.innerHTML = `<span class="alert-title">grid-data.json non caricato: calcolo disattivato</span>
+      Il browser non è riuscito a leggere il reticolo di riferimento. Se hai aperto il file con un doppio click,
+      il browser blocca il caricamento dei file locali via <code>fetch()</code>: avvia un piccolo server locale
+      (es. <code>python3 -m http.server</code> nella cartella dell'app) e apri la pagina da
+      <code>http://localhost:8000/</code>.`;
+    document.getElementById('warnBox').appendChild(note);
+    document.getElementById('rhSite').textContent = '–';
+    return;
   }
 
   setTimeout(()=>{ if(map) map.invalidateSize(); runCalculation(); }, 150);

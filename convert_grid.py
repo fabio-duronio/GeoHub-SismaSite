@@ -65,6 +65,15 @@ import argparse
 
 G = 10.0  # divisore per convertire ag da g/10 (convenzione del reticolo ufficiale) a g
 
+
+def to_float(tok):
+    """Converte un campo numerico tollerando virgola decimale e virgolette."""
+    t = str(tok).strip().strip('"').strip()
+    try:
+        return float(t)
+    except ValueError:
+        return float(t.replace(",", "."))
+
 LAT_RANGE = (34.0, 48.0)   # range plausibile per l'Italia (con margine)
 LON_RANGE = (5.0, 20.0)
 AG_PLAUSIBLE_MAX_G = 1.5   # oltre questa soglia, ag non può essere già in g
@@ -181,85 +190,121 @@ def _extract_nodes(df, mapping):
 # Lettura TXT / CSV grezzo (formato a colonne fisse, un TR via via crescente)
 # --------------------------------------------------------------------------
 def read_text_grid(path):
+    """Legge un CSV/TXT con una riga per nodo e, per ogni nodo, la sequenza
+    ID, LON, LAT (eventualmente preceduta da OBJECTID) seguita dalle 27 triple
+    ag/F0/Tc* nell'ordine dei 9 TR.
+
+    Gestisce, oltre al formato a colonne fisse separate da spazi:
+      - CSV con campi fra virgolette (formato ufficiale dati.mit.gov.it,
+        colonne "OBJECTID","ID","LON","LAT","T30ag",...),
+      - intestazioni su una o due righe ("TR = 30" come riga di raggruppamento),
+      - separatore ',' ';' o tab, con virgola come separatore decimale quando
+        il delimitatore di campo è ';'.
+    """
+    import csv
+
     tr_ref = [30, 50, 72, 101, 140, 201, 475, 975, 2475]
-    n_cols_hazard = len(tr_ref) * 3
+    n_haz = len(tr_ref) * 3
 
-    def sniff_delimiter(sample_lines):
-        for d in [",", ";", "\t"]:
-            counts = [line.count(d) for line in sample_lines if line.strip()]
-            if counts and min(counts) >= n_cols_hazard + 2 and len(set(counts)) == 1:
-                return d
-        return None
-
-    def split_line(line, delim):
-        line = line.strip()
-        return re.split(r"\s+", line) if delim is None else [p.strip() for p in line.split(delim)]
-
-    def to_float(tok):
-        return float(tok.strip().replace(",", "."))
-
-    def is_header(tokens):
-        try:
-            [to_float(t) for t in tokens[:3]]
-            return False
-        except ValueError:
-            return True
-
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        raw_lines = [l for l in f.readlines() if l.strip()]
+    with open(path, "r", encoding="utf-8-sig", errors="ignore", newline="") as f:
+        text = f.read()
+    raw_lines = [l for l in text.splitlines() if l.strip()]
     if not raw_lines:
         raise ValueError("File vuoto")
 
-    delim = sniff_delimiter(raw_lines[:20])
-    parsed, skipped = [], 0
-    for line in raw_lines:
-        tokens = split_line(line, delim)
-        if len(tokens) < 3 + n_cols_hazard or is_header(tokens):
-            skipped += 1
-            continue
-        try:
-            row_id = int(float(tokens[0]))
-            c1, c2 = to_float(tokens[1]), to_float(tokens[2])
-            vals = [to_float(t) for t in tokens[3:3 + n_cols_hazard]]
-        except ValueError:
-            skipped += 1
-            continue
-        parsed.append((row_id, c1, c2, vals))
+    # --- rilevamento del delimitatore -------------------------------------
+    # Si prova a leggere il file con ciascun delimitatore e si sceglie quello
+    # che produce, per la maggior parte delle righe, almeno n_haz+3 campi.
+    def try_parse(delim):
+        rows, ok = [], 0
+        for line in raw_lines:
+            fields = next(csv.reader([line], delimiter=delim)) if delim else line.split()
+            fields = [x.strip().strip('"').strip() for x in fields]
+            if len(fields) >= n_haz + 3:
+                try:
+                    vals = [to_float(x) for x in fields]
+                except ValueError:
+                    continue
+                rows.append(vals)
+                ok += 1
+        return rows, ok
 
-    if not parsed:
-        raise ValueError("Nessuna riga valida trovata nel file di testo")
+    best = ([], 0, None)
+    for delim in [";", ",", "\t", None]:
+        rows, ok = try_parse(delim)
+        if ok > best[1]:
+            best = (rows, ok, delim)
+    parsed_rows, n_ok, delim_used = best
+    if n_ok == 0:
+        raise ValueError(
+            "Nessuna riga numerica valida trovata: attese almeno "
+            f"{n_haz + 3} colonne (ID, LON, LAT + {n_haz} valori ag/F0/Tc*)."
+        )
+    print(f"Delimitatore rilevato: {repr(delim_used)} — righe valide: {n_ok}")
 
-    sample = parsed[:50]
+    # --- struttura delle colonne ------------------------------------------
+    # n_lead = numero di colonne che precedono il blocco dei 27 valori:
+    #   3 -> ID, LON, LAT
+    #   4 -> OBJECTID, ID, LON, LAT  (formato ufficiale MIT)
+    n_lead = len(parsed_rows[0]) - n_haz
+    if n_lead not in (3, 4):
+        raise ValueError(
+            f"Struttura non riconosciuta: {len(parsed_rows[0])} colonne per riga "
+            f"(attese {n_haz + 3} oppure {n_haz + 4})"
+        )
+    print(f"Colonne iniziali: {n_lead} "
+          f"({'OBJECTID, ID, LON, LAT' if n_lead == 4 else 'ID, LON, LAT'})")
+
+    sample = parsed_rows[:200]
+    idx_id = 1 if n_lead == 4 else 0
+    c_a, c_b = (2, 3) if n_lead == 4 else (1, 2)
 
     def fits(vals, rng):
         return all(rng[0] <= v <= rng[1] for v in vals)
 
-    c1_vals = [r[1] for r in sample]
-    c2_vals = [r[2] for r in sample]
-    if fits(c1_vals, LAT_RANGE) and fits(c2_vals, LON_RANGE):
-        order = "lat_lon"
-    elif fits(c1_vals, LON_RANGE) and fits(c2_vals, LAT_RANGE):
+    a_vals = [r[c_a] for r in sample]
+    b_vals = [r[c_b] for r in sample]
+    if fits(a_vals, LON_RANGE) and fits(b_vals, LAT_RANGE):
         order = "lon_lat"
+    elif fits(a_vals, LAT_RANGE) and fits(b_vals, LON_RANGE):
+        order = "lat_lon"
     else:
-        raise ValueError("Impossibile determinare l'ordine LAT/LON dalle prime righe del file di testo")
+        raise ValueError(
+            "Impossibile determinare l'ordine LAT/LON: i valori delle colonne "
+            "geografiche non ricadono negli intervalli attesi per l'Italia. "
+            "Verifica che ID/LON/LAT siano nelle posizioni previste."
+        )
+    print(f"Ordine colonne: colonna {c_a + 1}={order.split('_')[0].upper()}, "
+          f"colonna {c_b + 1}={order.split('_')[1].upper()}")
 
-    print(f"Ordine colonne rilevato: {'colonna2=LAT, colonna3=LON' if order=='lat_lon' else 'colonna2=LON, colonna3=LAT'}")
-    if skipped:
-        print(f"Righe ignorate (formato non valido): {skipped}")
+    ids, lats, lons = [], [], []
+    ag_cols = {tr: [] for tr in tr_ref}
+    f0_cols = {tr: [] for tr in tr_ref}
+    tc_cols = {tr: [] for tr in tr_ref}
+    for r in parsed_rows:
+        ids.append(int(round(r[idx_id])))
+        if order == "lon_lat":
+            lons.append(r[c_a]); lats.append(r[c_b])
+        else:
+            lats.append(r[c_a]); lons.append(r[c_b])
+        block = r[n_lead:n_lead + n_haz]
+        for t_i, tr in enumerate(tr_ref):
+            ag_cols[tr].append(block[t_i * 3 + 0])
+            f0_cols[tr].append(block[t_i * 3 + 1])
+            tc_cols[tr].append(block[t_i * 3 + 2])
 
-    n = len(parsed)
-    ids = [p[0] for p in parsed]
-    lats = [p[1] if order == "lat_lon" else p[2] for p in parsed]
-    lons = [p[2] if order == "lat_lon" else p[1] for p in parsed]
-
-    ag_cols, f0_cols, tc_cols = {}, {}, {}
-    for t_i, tr in enumerate(tr_ref):
-        ag_cols[tr] = [p[3][t_i * 3 + 0] for p in parsed]
-        f0_cols[tr] = [p[3][t_i * 3 + 1] for p in parsed]
-        tc_cols[tr] = [p[3][t_i * 3 + 2] for p in parsed]
+    # --- controlli minimi di coerenza -------------------------------------
+    if len(set(ids)) != len(ids):
+        dup = len(ids) - len(set(ids))
+        print(f"ATTENZIONE: {dup} ID duplicati nel file di input.")
+    for tr in tr_ref:
+        if len(ag_cols[tr]) != len(ids):
+            raise ValueError(f"Numero di valori incoerente per TR={tr}")
+    if len(ids) != 10751:
+        print(f"NOTA: il file contiene {len(ids)} nodi (il reticolo ufficiale ne ha 10751).")
 
     return {
-        "n": n, "tr_values": tr_ref,
+        "n": len(ids), "tr_values": tr_ref,
         "ids": ids, "lats": lats, "lons": lons,
         "ag": ag_cols, "F0": f0_cols, "Tc": tc_cols,
     }
@@ -314,7 +359,7 @@ def main():
     ap.add_argument("--sheet", default=None, help="Nome del foglio Excel da usare (default: auto-rilevato)")
     ap.add_argument("--header-row", type=int, default=None, help="Indice (0-based) della riga di intestazione nel foglio Excel (default: auto-rilevato)")
     ap.add_argument("--decimals-coord", type=int, default=4, help="Decimali per lat/lon (default 4, ~11 m)")
-    ap.add_argument("--decimals-val", type=int, default=3, help="Decimali per ag/F0/Tc* (default 3)")
+    ap.add_argument("--decimals-val", type=int, default=4, help="Decimali per ag/F0/Tc* (default 4, come la fonte ufficiale)")
     ap.add_argument("--force-ag-unit", choices=["g", "g10"], default=None, help="Forza l'unità di ag invece di rilevarla automaticamente ('g10' = valori espressi come g/10)")
     args = ap.parse_args()
 
