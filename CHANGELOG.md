@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.1 — 2026-10-31
+
+Identità grafica. Nessuna modifica al calcolo.
+
+- **Logo** di SismaSite (forma dello spettro di risposta con il rombo blu dell'intestazione) nell'intestazione dell'app e come icona della pagina; file in `assets/logo.svg`, `assets/icon-512.png`, `assets/apple-touch-icon.png`.
+- **Anteprima del link** (Open Graph): condividendo l'indirizzo dell'app su LinkedIn, Facebook o WhatsApp compare `assets/og-image.png` con titolo e descrizione.
+- Meta tag `description`, `author` e `theme-color`.
+
 ## 1.4.0 — 2026-10-31
 
 Cambio di titolarità e di licenza. Nessuna modifica al calcolo.
