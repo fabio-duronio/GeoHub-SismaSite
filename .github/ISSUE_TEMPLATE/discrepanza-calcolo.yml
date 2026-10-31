@@ -1,0 +1,110 @@
+name: Discrepanza di calcolo
+description: Segnala una differenza tra i risultati di SismaSite e un riferimento (foglio CSLP Spettri-NTC, altro software, calcolo manuale)
+title: "[Discrepanza] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione. Indica i dati di input e i valori a confronto: servono per riprodurre il calcolo e aggiornare il report di validazione.
+  - type: input
+    id: versione
+    attributes:
+      label: Versione di SismaSite
+      description: Riportata nel piè di pagina dell'app o nel CHANGELOG
+      placeholder: "es. v1.3.1"
+    validations:
+      required: true
+  - type: input
+    id: coordinate
+    attributes:
+      label: Coordinate del sito (WGS84, gradi decimali)
+      placeholder: "es. 42.3498, 13.3995"
+    validations:
+      required: true
+  - type: dropdown
+    id: stato_limite
+    attributes:
+      label: Stato limite
+      multiple: true
+      options:
+        - SLO
+        - SLD
+        - SLV
+        - SLC
+    validations:
+      required: true
+  - type: input
+    id: vn_cu
+    attributes:
+      label: Vita nominale VN e classe d'uso
+      placeholder: "es. VN = 50 anni, classe II (Cu = 1,0)"
+    validations:
+      required: true
+  - type: dropdown
+    id: sottosuolo
+    attributes:
+      label: Categoria di sottosuolo
+      options:
+        - A
+        - B
+        - C
+        - D
+        - E
+        - Non pertinente
+  - type: dropdown
+    id: topografia
+    attributes:
+      label: Categoria topografica
+      options:
+        - T1
+        - T2
+        - T3
+        - T4
+        - Non pertinente
+  - type: dropdown
+    id: parametro
+    attributes:
+      label: Grandezze in discrepanza
+      multiple: true
+      options:
+        - ag
+        - F0
+        - Tc*
+        - Ss / St / Cc
+        - Spettro di risposta
+        - Screening di liquefazione
+        - Disaggregazione
+        - Export PDF
+        - Altro
+    validations:
+      required: true
+  - type: textarea
+    id: valori_sismasite
+    attributes:
+      label: Valori ottenuti con SismaSite
+      placeholder: "es. SLV: ag = 0,261 g; F0 = 2,36; Tc* = 0,35 s"
+    validations:
+      required: true
+  - type: dropdown
+    id: fonte
+    attributes:
+      label: Fonte di riferimento
+      options:
+        - Foglio CSLP Spettri-NTC
+        - Altro software (specificare nelle note)
+        - Calcolo manuale (Allegati A e B, D.M. 14/01/2008)
+    validations:
+      required: true
+  - type: textarea
+    id: valori_riferimento
+    attributes:
+      label: Valori di riferimento
+      placeholder: "es. SLV: ag = 0,258 g; F0 = 2,37; Tc* = 0,35 s"
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: Note, screenshot, allegati
+      description: Trascina qui eventuali immagini o file
