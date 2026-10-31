@@ -2,7 +2,9 @@
 
 Applicazione web *client-side* per il calcolo dei parametri di pericolosità sismica di base e delle azioni sismiche su un sito, secondo il **D.M. 17/01/2018 (NTC 2018)**, la **Circolare n. 7/2019** e gli **Allegati A e B al D.M. 14/01/2008**.
 
-Repository: [`geologiaintasca/GeoHub-SismaSite`](https://github.com/geologiaintasca/GeoHub-SismaSite) · Demo: <https://geologiaintasca.github.io/GeoHub-SismaSite/>
+Repository: [`fabio-duronio/GeoHub-SismaSite`](https://github.com/fabio-duronio/GeoHub-SismaSite) · Demo: <https://fabio-duronio.github.io/GeoHub-SismaSite/>
+
+Autore: **Fabio Duronio**, geologo.
 
 > **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e i coefficienti sismici `k_h`, `k_v`. **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
 
@@ -33,7 +35,7 @@ Per rigenerare `grid-data.json`:
 ## Installazione e avvio
 
 ```bash
-git clone https://github.com/geologiaintasca/GeoHub-SismaSite.git
+git clone https://github.com/fabio-duronio/GeoHub-SismaSite.git
 cd GeoHub-SismaSite
 python3 -m http.server 8000
 ```
@@ -145,6 +147,16 @@ Le librerie Leaflet e Chart.js sono caricate da CDN: senza connessione la mappa 
 
 ## Licenza e citazione
 
-Distribuito con licenza **MIT** (vedi [LICENSE](LICENSE)). I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
+Copyright © 2026 Fabio Duronio. Distribuito con licenza **GNU AGPL-3.0** con termini aggiuntivi (vedi [LICENSE](LICENSE)). In sintesi:
 
-Se usi lo strumento in un lavoro professionale o scientifico, cita: *SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z*.
+- **Uso libero**, anche professionale: puoi usare l'app per relazioni, progetti e studi senza alcun costo.
+- **Chi modifica o ridistribuisce** il codice, anche solo pubblicandolo come servizio web, deve rilasciarlo con la stessa licenza e rendere disponibile il codice sorgente.
+- **Attribuzione obbligatoria**: le versioni derivate devono riportare nell'interfaccia "Basato su SismaSite di Fabio Duronio, geologo" con il link a questo repository.
+- **Nomi**: "SismaSite" e "GeoHub" non sono concessi in licenza; le versioni modificate devono usare un nome diverso.
+- **Licenze commerciali** diverse dalla AGPL (ad esempio per integrare il codice in software non open source) sono disponibili su richiesta.
+
+Le versioni fino alla 1.3.1 sono state pubblicate con licenza MIT.
+
+ I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
+
+Se usi lo strumento in un lavoro professionale o scientifico, cita: *Duronio F., SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z, https://github.com/fabio-duronio/GeoHub-SismaSite*.
