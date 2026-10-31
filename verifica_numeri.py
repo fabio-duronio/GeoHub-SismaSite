@@ -33,7 +33,7 @@ RIFERIMENTI = [
     ("Roma",     41.9028, 12.4964, 0.120, 2.62, 0.297, 1.200, 0.144, 0.0346),
     ("Napoli",   40.8518, 14.2681, 0.168, 2.37, 0.338, 1.200, 0.201, 0.0483),
     ("Catania",  37.5079, 15.0830, 0.206, 2.46, 0.357, 1.197, 0.247, 0.0691),
-    ("Cosenza",  39.2983, 16.2539, 0.272, 2.43, 0.373, 1.136, 0.309, 0.0864),
+    ("Cosenza",  39.2983, 16.2539, 0.271, 2.43, 0.372, 1.137, 0.308, 0.0861),  # v1.3.0: vertici della maglia (prima 4 nodi più vicini)
     ("Cagliari", 39.2238,  9.1217, 0.050, 2.88, 0.340, 1.200, 0.060, 0.0120),  # Tabella 2 (isole)
 ]
 # tolleranze: i valori sono confrontati sugli arrotondamenti mostrati in tabella
@@ -100,6 +100,9 @@ def main():
                 "typeof GRID !== 'undefined' && GRID && GRID.count > 1000", timeout=60000
             )
             n_nodi = page.evaluate("GRID.count")
+            passo = page.evaluate("GRID.rowStride")
+            if passo != 222:
+                fallimenti.append(f"passo di riga del reticolo = {passo}, atteso 222")
             print(f"Reticolo caricato: {n_nodi} nodi")
             if n_nodi != 10751:
                 fallimenti.append(f"reticolo con {n_nodi} nodi invece di 10751")
@@ -115,7 +118,7 @@ def main():
                 page.wait_for_timeout(250)
                 r = page.evaluate(
                     """() => { const s = lastResults.byLS.SLV;
-                        return {ag:s.ag, F0:s.F0, Tc0:s.Tc0, Ss:s.Ss, amax:s.amax, kh:s.kh,
+                        return {ag:s.ag, F0:s.F0, Tc0:s.Tc0, Ss:s.Ss, amax:s.amax, kh:s.kh, metodo:s.metodoNodi||'tab2',
                                 TR: Object.fromEntries(Object.entries(lastResults.byLS).map(([k,v])=>[k,v.TR]))}; }"""
                 )
                 attesi = {"ag": ag, "F0": f0, "Tc0": tc, "Ss": ss, "amax": amax, "kh": kh}
@@ -129,6 +132,8 @@ def main():
                 for sl, tr_atteso in TR_ATTESI.items():
                     if abs(r["TR"][sl] - tr_atteso) > 0.5:
                         fallimenti.append(f"{nome}: T_R({sl}) = {r['TR'][sl]:.1f}, atteso {tr_atteso}")
+                if nome != "Cagliari" and r["metodo"] != "maglia":
+                    fallimenti.append(f"{nome}: nodi selezionati con criterio '{r['metodo']}', atteso 'maglia' (Allegato A)")
                 stato = "OK " if all(e[4] for e in esiti) else "FAIL"
                 print(f"  [{stato}] {nome:10s} ag={r['ag']:.3f} F0={r['F0']:.2f} Tc*={r['Tc0']:.3f} "
                       f"Ss={r['Ss']:.3f} amax={r['amax']:.3f} kh={r['kh']:.4f}")
@@ -167,6 +172,29 @@ def main():
                 fallimenti.append(f"SLO: q mostrato = {q_slo!r}, atteso 1,0")
             else:
                 print("  [OK ] SLO impone q = 1,0 (entrambe le componenti)")
+
+            # SLD: q limitato a 1,5 anche se l'utente inserisce un q da SLV
+            page.fill("#qFactor", "3.9")
+            page.select_option("#lsSelect", "SLD")
+            page.wait_for_timeout(300)
+            page.evaluate("() => renderDesignPanel()")
+            q_sld = page.evaluate("() => document.getElementById('designQLabel').textContent").strip()
+            nota_sld = page.evaluate("() => document.getElementById('designNote').innerText")
+            if q_sld != "1,5" or "limitato a 1,5" not in nota_sld:
+                fallimenti.append(f"SLD: q mostrato = {q_sld!r} (atteso 1,5 con avviso)")
+            else:
+                print("  [OK ] SLD limita q a 1,5 e lo segnala (q inserito 3,9)")
+            page.fill("#qFactor", "1.5")
+
+            # V_R: nessun minimo di 35 anni (NTC 2018). V_N = 10, C_U = 0,7 -> V_R = 7, T_R(SLV) = 66,4 anni
+            page.fill("#vn", "10"); page.select_option("#cu", "0.7")
+            page.click("#btnCalc"); page.wait_for_timeout(300)
+            tr_slv = page.evaluate("() => lastResults.byLS.SLV.TR")
+            avviso = page.evaluate("() => document.getElementById('warnBox').innerText")
+            if abs(tr_slv - 66.4) > 0.2 or "35 anni" not in avviso:
+                fallimenti.append(f"V_R = 7 anni: T_R(SLV) = {tr_slv:.1f} (atteso 66,4, nessun minimo) o avviso mancante")
+            else:
+                print("  [OK ] V_R senza minimo di 35 anni (NTC 2018), con nota esplicativa")
 
             if errori_js:
                 fallimenti.append(f"errori JavaScript: {errori_js[:3]}")

@@ -2,7 +2,7 @@
 
 Applicazione web *client-side* per il calcolo dei parametri di pericolosità sismica di base e delle azioni sismiche su un sito, secondo il **D.M. 17/01/2018 (NTC 2018)**, la **Circolare n. 7/2019** e gli **Allegati A e B al D.M. 14/01/2008**.
 
-Repository: `geologiaintasca/GeoHub-Parametri-sismici` · Demo: <https://geologiaintasca.github.io/GeoHub-Parametri-sismici/>
+Repository: [`geologiaintasca/GeoHub-SismaSite`](https://github.com/geologiaintasca/GeoHub-SismaSite) · Demo: <https://geologiaintasca.github.io/GeoHub-SismaSite/>
 
 > **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e i coefficienti sismici `k_h`, `k_v`. **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
 
@@ -33,8 +33,8 @@ Per rigenerare `grid-data.json`:
 ## Installazione e avvio
 
 ```bash
-git clone https://github.com/geologiaintasca/GeoHub-Parametri-sismici.git
-cd GeoHub-Parametri-sismici
+git clone https://github.com/geologiaintasca/GeoHub-SismaSite.git
+cd GeoHub-SismaSite
 python3 -m http.server 8000
 ```
 
@@ -64,14 +64,14 @@ Opzioni utili: `--sheet`, `--header-row`, `--decimals-val` (default 4), `--decim
 
 ## Metodo di calcolo
 
-1. **Periodo di ritorno** — `T_R = −V_R / ln(1 − P_VR)`, con `V_R = V_N · C_U` e `P_VR` = 81 %, 63 %, 10 %, 5 % rispettivamente per SLO, SLD, SLV, SLC (NTC Tab. 2.5.I). Il valore è limitato all'intervallo tabulato **30–2475 anni** (Allegato A, nota 1); quando il limite interviene l'app lo segnala.
+1. **Periodo di ritorno** — `T_R = −V_R / ln(1 − P_VR)`, con `V_R = V_N · C_U` (NTC 2018 §2.4.3, **senza valore minimo**: il limite `V_R ≥ 35` anni delle NTC 2008 è stato eliminato; per `V_R < 35` anni l'app mostra una nota) e `P_VR` = 81 %, 63 %, 10 %, 5 % rispettivamente per SLO, SLD, SLV, SLC (NTC Tab. 2.5.I). Il valore è limitato all'intervallo tabulato **30–2475 anni** (Allegato A, nota 1); quando il limite interviene l'app lo segnala.
 2. **Interpolazione in `T_R`** — logaritmica tra i due periodi di ritorno tabulati che racchiudono `T_R` (Allegato A, eq. [2]).
-3. **Interpolazione spaziale** — media pesata con pesi = inversi delle distanze sui **4 nodi più vicini** (Allegato A, eq. [3]).
+3. **Interpolazione spaziale** — media pesata con pesi = inversi delle distanze sui **4 vertici della maglia del reticolo che contiene il sito** (Allegato A, eq. [3]). La maglia è individuata dalla numerazione per righe del reticolo (passo di riga ricavato dai dati: 222) con un test punto-in-quadrilatero. Se il sito non ricade in una maglia completa (bordo del reticolo, lacune lungo la costa) si usano i 4 nodi più vicini e l'app lo segnala. Il criterio adottato è riportato nel report insieme agli ID dei nodi.
 4. **Isole** — per tutte le isole escluse Sicilia, Ischia, Procida e Capri i parametri sono **costanti** e sono presi dalla **Tabella 2 dell'Allegato B**; per questi siti il reticolo non viene interrogato. Il riconoscimento è geografico e approssimato: Sardegna per area rettangolare, le altre isole per centro + raggio (Elba, Pianosa, Capraia, Gorgona, Giglio, Giannutri, Montecristo, Egadi, Pantelleria, Lampedusa, Linosa, Ponza, Palmarola, Zannone, Ventotene, S. Stefano, Ustica, Tremiti, Alicudi, Filicudi, Panarea, Stromboli, Lipari, Vulcano, Salina). Un punto sulla costa antistante (es. Piombino, Argentario) resta correttamente sul reticolo.
 5. **Amplificazione** — `S_S` e `C_C` (Tab. 3.2.IV), `S_T` (Tab. 3.2.V), `T_B = T_C/3`, `T_C = C_C·T*_C`, `T_D = 4a_g + 1,6`, `η = √(10/(5+ξ))` con limite inferiore 0,55.
 6. **Spettri elastici** — orizzontale: NTC eq. 3.2.6–3.2.8; verticale (§3.2.3.2.2): `F_v = 1,35·F_0·√(a_g/g)`, **`S_S = 1`**, `S_T` da Tab. 3.2.V, `T_B` = 0,05 s, `T_C` = 0,15 s, `T_D` = 1,0 s.
-7. **Spettri di progetto** — per **SLO** coincidono con gli elastici (q = 1,0, §3.2.3.4), per entrambe le componenti. Per **SLD, SLV, SLC** si sostituisce `η` con `1/q` nelle formule [3.2.2] e [3.2.8] (§3.2.3.5): ne risulta, per `0 ≤ T < T_B`, `S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)(1 − T/T_B)]`, mentre per `T ≥ T_B` vale `S_d = S_e/q`. In ogni caso si assume `S_d(T) ≥ 0,2·a_g`. Il fattore `q` è impostato dall'utente (limiti della Tab. 7.3.I: SLD ≤ 1,5, SLV dissipativo ≥ 1,5 / non dissipativo ≤ 1,5); per la componente verticale si adotta `q = 1,5` (per SLO `q = 1`).
-8. **Coefficienti sismici** — `a_max = S_S·S_T·a_g`, `k_h = β_s·a_max/g`, `k_v = ±0,5·k_h`, con `β_s` dalla Tab. 7.11.I (0,20 / 0,27 / 0,30 per categoria A e 0,20 / 0,24 / 0,28 per B–C–D–E nelle fasce ≤ 0,1 g / 0,1–0,2 g / 0,2–0,4 g; oltre 0,4 g si adotta 0,36 / 0,32, valore conservativo di uso corrente).
+7. **Spettri di progetto** — per **SLO** coincidono con gli elastici (q = 1,0, §3.2.3.4), per entrambe le componenti. Per **SLD, SLV, SLC** si sostituisce `η` con `1/q` nelle formule [3.2.2] e [3.2.8] (§3.2.3.5): ne risulta, per `0 ≤ T < T_B`, `S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)(1 − T/T_B)]`, mentre per `T ≥ T_B` vale `S_d = S_e/q`. In ogni caso si assume `S_d(T) ≥ 0,2·a_g`. Il fattore `q` impostato dall'utente vale per **SLV e SLC** (Tab. 7.3.I: dissipativo ≥ 1,5 / non dissipativo ≤ 1,5); per **SLD** l'app adotta `min(q; 1,5)` e segnala quando il valore inserito viene limitato; per **SLO** `q = 1`. Per la componente verticale si adotta `q = 1,5` (per SLO `q = 1`).
+8. **Coefficienti sismici** — `a_max = S_S·S_T·a_g`, `k_h = β_s·a_max/g`, `k_v = ±0,5·k_h`, con `β_s` dalla Tab. 7.11.I (0,20 / 0,27 / 0,30 per categoria A e 0,20 / 0,24 / 0,28 per B–C–D–E nelle fasce ≤ 0,1 g / 0,1–0,2 g / 0,2–0,4 g; oltre 0,4 g la tabella non è definita: l'app adotta 0,36 / 0,32 come **scelta conservativa non normativa** e lo segnala con un avviso; il valore va giustificato dal progettista).
 
 ## Validazione
 
@@ -86,7 +86,7 @@ Valori di riferimento per il collaudo (**SLV**, categoria **B**, topografia **T1
 | Roma | 0,120 | 2,62 | 0,297 | 1,200 | 0,144 | 0,0346 |
 | Napoli | 0,168 | 2,37 | 0,338 | 1,200 | 0,201 | 0,0483 |
 | Catania | 0,206 | 2,46 | 0,357 | 1,197 | 0,247 | 0,0691 |
-| Cosenza | 0,272 | 2,43 | 0,373 | 1,136 | 0,309 | 0,0864 |
+| Cosenza | 0,271 | 2,43 | 0,372 | 1,137 | 0,308 | 0,0861 |
 | Cagliari (Tab. 2, isole) | 0,050 | 2,88 | 0,340 | 1,200 | 0,060 | 0,0120 |
 
 Spettro di progetto di riferimento (**L'Aquila, SLV, cat. B, T1, q = 1,5**): `S_d(0)` = 0,3007 g · plateau `S_d` = 0,4738 g · `S_d(1,0 s)` = 0,2233 g · `S_dv` plateau = 0,2831 g · minimo `0,2·a_g` = 0,0521 g. Con SLO il fattore `q` è forzato a 1,0 per entrambe le componenti.
@@ -100,7 +100,7 @@ pip install playwright && python3 -m playwright install chromium
 python3 verifica_numeri.py
 ```
 
-Lo script verifica i parametri di pericolosità per 7 località (compresa un'isola), lo spettro di progetto `S_d` e il comportamento di SLO, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
+Lo script verifica i parametri di pericolosità per 7 località (compresa un'isola), il criterio di selezione dei nodi (vertici della maglia), lo spettro di progetto `S_d`, il comportamento di SLO e SLD (limite `q ≤ 1,5`) e l'assenza del minimo di `V_R`, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
 
 ## Limiti e perimetro d'uso
 
@@ -147,4 +147,4 @@ Le librerie Leaflet e Chart.js sono caricate da CDN: senza connessione la mappa 
 
 Distribuito con licenza **MIT** (vedi [LICENSE](LICENSE)). I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
 
-Se usi lo strumento in un lavoro professionale o scientifico, cita: *SismaSite (GeoHub-Parametri-sismici), parametri sismici del sito secondo NTC 2018, versione X.Y.Z*.
+Se usi lo strumento in un lavoro professionale o scientifico, cita: *SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z*.

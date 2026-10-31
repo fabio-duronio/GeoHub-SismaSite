@@ -343,7 +343,7 @@ def build_columnar(parsed, decimals_coord=4, decimals_val=3, source_label="retic
     return {
         "meta": {
             "source": source_label,
-            "datum": "verificare il datum del file sorgente (tipicamente ED50)",
+            "datum": "ED50",
             "trValues": tr_values,
             "count": n,
         },
@@ -366,10 +366,10 @@ def main():
     ext = os.path.splitext(args.input)[1].lower()
     if ext in (".xls", ".xlsx", ".xlsm"):
         parsed = read_excel_grid(args.input, sheet=args.sheet, header_row=args.header_row)
-        source_label = f"Reticolo importato da {os.path.basename(args.input)} (verificare corrispondenza con Allegato B ufficiale, D.M. 14/01/2008 / MIT-INGV Open Data)"
+        source_label = f"Allegato B al D.M. 14/01/2008, reticolo di riferimento (Open Data MIT, dataset Parametri Spettrali Sismici; file {os.path.basename(args.input)}, a_g convertito in g)"
     else:
         parsed = read_text_grid(args.input)
-        source_label = f"Reticolo importato da {os.path.basename(args.input)} (verificare corrispondenza con Allegato B ufficiale, D.M. 14/01/2008 / MIT-INGV Open Data)"
+        source_label = f"Allegato B al D.M. 14/01/2008, reticolo di riferimento (Open Data MIT, dataset Parametri Spettrali Sismici; file {os.path.basename(args.input)}, a_g convertito in g)"
 
     if args.force_ag_unit == "g10":
         for tr in parsed["tr_values"]:

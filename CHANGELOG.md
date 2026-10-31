@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.3.0 — 2026-10-31
+
+Revisione di conformità all'Allegato A e alle NTC 2018 dopo la validazione indipendente (300 siti casuali confrontati con un'implementazione separata delle formule: scarti dell'ordine di 1e-14).
+
+### Correzioni normative
+
+- **Interpolazione spaziale (Allegato A, eq. [3])** — la media pesata usa ora i **4 vertici della maglia del reticolo che contiene il sito**, come prescritto, e non più i 4 nodi più vicini. I due criteri coincidono in circa l'80 % dei siti; negli altri `a_g` poteva differire fino al 5–7 % (p95 ≈ 2 %). La maglia è individuata dalla numerazione per righe del reticolo (passo ricavato dai dati, 222) con un test punto-in-quadrilatero. Se il sito non ricade in una maglia completa (bordo del reticolo, lacune costiere) si ripiega sui 4 nodi più vicini **con avviso**. Valore di collaudo cambiato: **Cosenza** `a_g` 0,272 → 0,271 g, `k_h` 0,0864 → 0,0861; le altre località di riferimento sono invariate.
+- **Fattore di comportamento allo SLD (§7.3, Tab. 7.3.I)** — `q` è limitato a **1,5** per lo SLD, con avviso quando il valore inserito è maggiore. Prima un `q` da SLV (es. 3,9) veniva applicato anche allo SLD, con spettro di danno non a favore di sicurezza. Il valore inserito resta applicato a SLV e SLC.
+
+### Chiarimenti (nessuna modifica al calcolo)
+
+- **Periodo di riferimento `V_R` (§2.4.3)** — confermato `V_R = V_N·C_U` **senza valore minimo**: il limite `V_R ≥ 35` anni delle NTC 2008 è stato eliminato dalle NTC 2018. Aggiunti una nota sotto i campi `V_N`/`C_U` e un avviso quando `V_R < 35` anni.
+- **`β_s` oltre 0,4 g** — la Tab. 7.11.I non è definita oltre 0,4 g. I valori 0,36 / 0,32 adottati dalla v1.1.0 sono ora dichiarati come **scelta conservativa non normativa**, con avviso a schermo e nel report (la v1.1.0 li elencava erroneamente fra le correzioni normative).
+
+### Tracciabilità e testi
+
+- Il report indica, oltre agli ID e alle distanze dei nodi, il **criterio di selezione** adottato (vertici della maglia, nodo coincidente, 4 nodi più vicini).
+- Nota metodologica a schermo allineata al nuovo criterio di interpolazione.
+- `grid-data.json` e `convert_grid.py`: sostituiti i testi provvisori nei metadati (`source` con il riferimento ad Allegato B e Open Data MIT, `datum` = ED50). Dati numerici invariati.
+- README e LICENSE aggiornati al nuovo nome del repository (**GeoHub-SismaSite**) e al nuovo indirizzo della demo; il vecchio URL di GitHub Pages non viene reindirizzato.
+- `verifica_numeri.py`: aggiunti i controlli su passo del reticolo, criterio di selezione dei nodi, limite di `q` allo SLD e assenza del minimo di `V_R`.
+
 ## 1.2.0 — 2026-10-23
 
 ### Nuova funzionalità: spettri di risposta di progetto S_d(T)
