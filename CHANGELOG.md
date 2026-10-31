@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 — 2026-10-31
+
+- Aggiunta l'icona della pagina (SVG inline nel `<head>`, nessun file aggiuntivo): elimina l'errore 404 su `/favicon.ico` nella console del browser. Nessuna modifica al calcolo.
+
 ## 1.3.0 — 2026-10-31
 
 Revisione di conformità all'Allegato A e alle NTC 2018 dopo la validazione indipendente (300 siti casuali confrontati con un'implementazione separata delle formule: scarti dell'ordine di 1e-14).
