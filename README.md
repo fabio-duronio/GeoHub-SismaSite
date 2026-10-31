@@ -147,7 +147,7 @@ Le librerie Leaflet e Chart.js sono caricate da CDN: senza connessione la mappa 
 
 ## Licenza e citazione
 
-Copyright © 2026 Fabio Duronio. Distribuito con licenza **GNU AGPL-3.0** con termini aggiuntivi (vedi [LICENSE](LICENSE)). In sintesi:
+Copyright © 2026 Fabio Duronio. Distribuito con licenza **GNU AGPL-3.0** con termini aggiuntivi (testo della licenza in [LICENSE](LICENSE), copyright e termini aggiuntivi in [NOTICE](NOTICE)). In sintesi:
 
 - **Uso libero**, anche professionale: puoi usare l'app per relazioni, progetti e studi senza alcun costo.
 - **Chi modifica o ridistribuisce** il codice, anche solo pubblicandolo come servizio web, deve rilasciarlo con la stessa licenza e rendere disponibile il codice sorgente.
