@@ -1,0 +1,39 @@
+name: Richiesta di funzionalità
+description: Proponi una nuova funzione o un miglioramento di SismaSite
+title: "[Funzionalità] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: esigenza
+    attributes:
+      label: Esigenza
+      description: Quale problema professionale vuoi risolvere?
+      placeholder: "es. Devo allegare lo spettro di progetto SLV alla relazione geologica in formato modificabile"
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Soluzione proposta
+      placeholder: "es. Export dello spettro in CSV accanto al PDF"
+    validations:
+      required: true
+  - type: input
+    id: norma
+    attributes:
+      label: Riferimento normativo o tecnico (se pertinente)
+      placeholder: "es. NTC 2018 §3.2.3.2; Circolare n. 7/2019 §C3.2.3"
+  - type: dropdown
+    id: priorita
+    attributes:
+      label: Rilevanza per il tuo lavoro
+      options:
+        - Indispensabile
+        - Utile
+        - Comoda
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: Note, esempi, allegati
