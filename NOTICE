@@ -1,0 +1,52 @@
+SismaSite (GeoHub-SismaSite) — Parametri sismici del sito secondo NTC 2018
+Copyright (C) 2026 Fabio Duronio
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3 of the License, with the
+additional terms below (Section 7).
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+The full license text is in the LICENSE file. The additional terms below
+apply together with it and must accompany every copy of the program.
+
+Source code: https://github.com/fabio-duronio/GeoHub-SismaSite
+
+-------------------------------------------------------------------------
+TERMINI AGGIUNTIVI ai sensi della Sezione 7 della GNU AGPL v3
+ADDITIONAL TERMS pursuant to Section 7 of the GNU AGPL v3
+-------------------------------------------------------------------------
+
+1. Attribuzione (Sez. 7(b)). Ogni copia, versione modificata o servizio
+   basato su questo programma deve conservare, nell'interfaccia utente e
+   nella documentazione, la dicitura "Basato su SismaSite di Fabio Duronio,
+   geologo" con il collegamento al repository originale.
+   Attribution (Sec. 7(b)). Any copy, modified version or service based on
+   this program must preserve, in its user interface and documentation, the
+   notice "Based on SismaSite by Fabio Duronio, geologist" with a link to the
+   original repository.
+
+2. Versioni modificate (Sez. 7(c)). Le versioni modificate devono essere
+   contrassegnate in modo ragionevole come diverse dall'originale.
+   Modified versions (Sec. 7(c)). Modified versions must be marked in
+   reasonable ways as different from the original version.
+
+3. Nomi (Sez. 7(e)). Questa licenza non concede alcun diritto sull'uso dei
+   nomi "SismaSite" e "GeoHub" né di eventuali loghi associati. Le versioni
+   modificate devono usare un nome diverso.
+   Names (Sec. 7(e)). This license grants no rights to use the names
+   "SismaSite" and "GeoHub" or any associated logos. Modified versions must
+   use a different name.
+
+Licenze commerciali diverse dalla AGPL sono disponibili su richiesta
+all'autore. / Commercial licenses other than the AGPL are available from the
+author on request.
+
+I dati di pericolosità sismica (grid-data.json) derivano dagli Open Data del
+Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008)
+e restano soggetti alle condizioni della fonte originale.
+
