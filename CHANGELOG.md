@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 — 2026-10-31
+
+Cambio di titolarità e di licenza. Nessuna modifica al calcolo.
+
+- **Licenza**: da MIT a **GNU AGPL-3.0** con termini aggiuntivi (Sez. 7): attribuzione obbligatoria all'autore nelle versioni derivate, marcatura delle versioni modificate, nessun diritto sui nomi "SismaSite" e "GeoHub". Le versioni fino alla 1.3.1 restano pubblicate con licenza MIT.
+- **Titolare del copyright**: Fabio Duronio (in precedenza "Geologiaintasca").
+- **Nuovi indirizzi**: repository `github.com/fabio-duronio/GeoHub-SismaSite`, app `fabio-duronio.github.io/GeoHub-SismaSite/`. I vecchi link al repository reindirizzano; il vecchio indirizzo dell'app no.
+- **Piè di pagina dell'app**: autore, licenza e link al codice sorgente, come richiesto dalla AGPL per i programmi usati via rete.
+
 ## 1.3.1 — 2026-10-31
 
 - Aggiunta l'icona della pagina (SVG inline nel `<head>`, nessun file aggiuntivo): elimina l'errore 404 su `/favicon.ico` nella console del browser. Nessuna modifica al calcolo.
