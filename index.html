@@ -10,7 +10,23 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SismaSite · Analisi Sismica del Sito NTC 2018</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231f5fab'/><polyline points='3,17 8,17 10,13 12,21 14,7 17,26 19,11 21,19 23,15 25,17 29,17' fill='none' stroke='white' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230b1521'/><path d='M11 47 L11 51 L53 51' fill='none' stroke='%233b5674' stroke-width='2.5' stroke-linecap='round'/><path d='M12 42 L21 18 L33 18 C40 18 44 34 54 38' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/><rect x='17' y='14' width='8' height='8' fill='%232f7dd6' transform='rotate(45 21 18)'/></svg>">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="author" content="Fabio Duronio">
+<meta name="description" content="Parametri sismici di sito, spettri di risposta SLO/SLD/SLV/SLC e screening di liquefazione secondo le NTC 2018, sulla griglia INGV. Gratuita e open source.">
+<meta name="theme-color" content="#0b1521">
+<!-- Anteprima del link sui social (Open Graph) -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<meta property="og:site_name" content="SismaSite">
+<meta property="og:title" content="SismaSite · Analisi sismica del sito NTC 2018">
+<meta property="og:description" content="Parametri sismici di sito, spettri di risposta e screening di liquefazione sulla griglia INGV. Gratuita e open source, di Fabio Duronio, geologo.">
+<meta property="og:url" content="https://fabio-duronio.github.io/GeoHub-SismaSite/">
+<meta property="og:image" content="https://fabio-duronio.github.io/GeoHub-SismaSite/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SismaSite: logo, descrizione e spettri elastici di esempio SLO, SLD, SLV e SLC">
+<meta name="twitter:card" content="summary_large_image">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +80,8 @@
     height:58px;
     border-bottom:3px solid var(--accent);
   }
-  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-logo{width:30px; height:30px; flex:none; border-radius:7px; box-shadow:0 0 0 1px var(--navy-700);}
   .brand .mark{
     width:11px;height:11px;background:var(--accent);border-radius:1px;
     transform:rotate(45deg);
@@ -263,7 +280,7 @@
 
 <div class="topbar no-print">
   <div class="brand">
-    <span class="mark"></span>
+    <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1521"/><path d="M11 47 L11 51 L53 51" fill="none" stroke="#3b5674" stroke-width="2.5" stroke-linecap="round"/><path d="M12 42 L21 18 L33 18 C40 18 44 34 54 38" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="17" y="14" width="8" height="8" fill="#2f7dd6" transform="rotate(45 21 18)"/></svg>
     <span class="brand-text">SismaSite</span>
     <span class="brand-sub">Analisi sismica del sito — NTC 2018</span>
   </div>
@@ -729,7 +746,7 @@ function islandAt(lat, lon){
   return null;
 }
 
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 const APP_VERSION_DATE = '2026-10-31';
 
 let GRID = null;      // rappresentazione interna unificata: {meta, count, id[], lon[], lat[], ag[t][i], F0[t][i], Tc[t][i]}
