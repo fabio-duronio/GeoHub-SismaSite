@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SismaSite">
+  <rect width="64" height="64" rx="14" fill="#0b1521"/>
+  <path d="M11 47 L11 51 L53 51" fill="none" stroke="#3b5674" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M12 42 L21 18 L33 18 C40 18 44 34 54 38" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="17" y="14" width="8" height="8" fill="#2f7dd6" transform="rotate(45 21 18)"/>
+</svg>
