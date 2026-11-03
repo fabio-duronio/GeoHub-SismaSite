@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.5.0 — 2026-11-03
+
+Nuova sezione **Inquadramento sismico del sito** e due correzioni. I parametri di pericolosità di base (`a_g`, `F_0`, `T*_C`), gli spettri e i coefficienti di amplificazione non cambiano (verificato su 7 punti di controllo rispetto alla 1.4.1).
+
+**Correzioni**
+- **Disaggregazione**: eliminata la stima automatica di M_w, R, ε (regole empiriche dall'`a_g`) con il grafico e la matrice sintetici, che non erano dati INGV. Restano i campi per inserire a mano i valori del report ufficiale INGV-DPC, con un campo per la fonte.
+- **Coefficienti k_h, k_v**: per `a_g` > 0,4 g l'app usava β_s = 0,36 (categoria A) e 0,32 (B–E), valori non previsti dalla Tab. 7.11.I delle NTC 2018 (verificata sul testo in G.U.). Ora oltre 0,4 g k_h e k_v non sono calcolati e un avviso lo spiega.
+
+**Nuove funzioni**
+- **Comune e classificazione sismica**: comune individuato automaticamente dai confini ISTAT al 1° gennaio 2026 (conferma richiesta entro 200 m dal confine); zona dall'elenco DPC "Classificazione sismica aggiornata a maggio 2025", con le sottozone regionali così come pubblicate e avviso per i comuni divisi in più sottozone. Solo fini programmatori e amministrativi.
+- **Eventi sismici strumentali nel raggio**: servizio FDSN dell'INGV in tempo reale; predefiniti raggio 30 km, M ≥ 2,5, dal 1985 (modificabili); tipo di magnitudo per ogni evento; avvertenza sulla completezza del catalogo.
+- **Storia sismica della località** (DBMI15 v4.0): località più vicina proposta automaticamente, con alternative entro 10 km; tutte le osservazioni, codici di intensità spiegati.
+- **Terremoti storici con epicentro nel raggio** (CPTI15 v4.0).
+- **Faglie attive e capaci** (ISPRA ITHACA) entro un raggio di ricerca non normativo (predefinito 10 km), ordinate per distanza, con cinematica, ultima attività e scheda ISPRA; tracce sulla mappa, nessuna fascia di rispetto; rimando alle Linee guida FAC (2015).
+- Nuovi file dati e script: `classificazione-data.json`, `comuni-data.json`, `storica-data.json`; `convert_classificazione.py`, `convert_comuni.py`, `convert_storica.py`, `verifica_dati.py`. I file dati si caricano solo quando servono.
+
+**Note**
+- Lo screening di liquefazione e i coefficienti k_h, k_v restano, con l'indicazione che passeranno alle app GeoHub-Liquefazione e GeoHub-Versanti.
+- NOTICE e README aggiornati con fonti, licenze e citazioni dei dati.
+
 ## 1.4.1 — 2026-10-31
 
 Identità grafica. Nessuna modifica al calcolo.

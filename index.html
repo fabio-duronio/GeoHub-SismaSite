@@ -13,7 +13,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230b1521'/><path d='M11 47 L11 51 L53 51' fill='none' stroke='%233b5674' stroke-width='2.5' stroke-linecap='round'/><path d='M12 42 L21 18 L33 18 C40 18 44 34 54 38' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/><rect x='17' y='14' width='8' height='8' fill='%232f7dd6' transform='rotate(45 21 18)'/></svg>">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="author" content="Fabio Duronio">
-<meta name="description" content="Parametri sismici di sito, spettri di risposta SLO/SLD/SLV/SLC e screening di liquefazione secondo le NTC 2018, sulla griglia INGV. Gratuita e open source.">
+<meta name="description" content="Parametri sismici di sito e spettri di risposta secondo le NTC 2018 sulla griglia INGV, con inquadramento sismico: classificazione, eventi strumentali, storia sismica, faglie capaci. Gratuita e open source.">
 <meta name="theme-color" content="#0b1521">
 <!-- Anteprima del link sui social (Open Graph) -->
 <meta property="og:type" content="website">
@@ -251,6 +251,10 @@
   }
   @media (max-width:560px){ .report-header .rh-row{gap:6px 16px;} }
 
+  .section-title{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--slate-600);
+    margin:26px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--line); }
+  .scroll-box{ max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:3px; }
+  .scroll-box .data-table{ margin:0; }
   .footer-note{
     text-align:center; color:var(--slate-500); font-size:11.5px; padding:20px 0 40px;
   }
@@ -258,6 +262,7 @@
   /* ===== Print ===== */
   @media print{
     body{background:#fff; font-size:11.5px;}
+    .scroll-box{ max-height:none; overflow:visible; border:0; }
     .no-print{display:none !important;}
     .app{display:block; padding:0; max-width:100%;}
     .panel{border:1px solid #999; break-inside:avoid; margin-bottom:14px; box-shadow:none;}
@@ -371,6 +376,7 @@
     <div class="panel">
       <div class="panel-header"><h2>Screening liquefazione (opzionale)</h2></div>
       <div class="panel-body">
+        <div class="hint" style="margin:0 0 10px;">Questa funzione passerà all'app dedicata <b>GeoHub-Liquefazione</b>.</div>
         <div class="checkline">
           <input type="checkbox" id="liqEnable">
           <label for="liqEnable">Attiva verifica preliminare di liquefacibilità</label>
@@ -500,69 +506,86 @@
 
     <div class="panel">
       <div class="panel-header">
-        <h2>Disaggregazione della pericolosità sismica<span class="badge-illustrative">scenario illustrativo</span></h2>
-        <div style="font-size:12px; color:var(--slate-600);">Riferita allo stato limite selezionato (T<sub>R</sub> = <span id="disaggTRLabel">–</span> anni)</div>
+        <h2>Disaggregazione della pericolosità sismica</h2>
+        <div style="font-size:12px; color:var(--slate-600);">Stato limite selezionato: T<sub>R</sub> = <span id="disaggTRLabel">–</span> anni</div>
       </div>
       <div class="panel-body">
-
-        <div class="disclaimer" id="disaggDisclaimer" style="margin:0 0 14px;">
-          <b>Attenzione — non è un dato INGV.</b> I valori M<sub>w</sub>, R ed ε e la matrice di seguito riportati sono
-          <b>stimati con un modello semplificato</b> a partire da a<sub>g</sub> (o inseriti manualmente dall'utente) e servono solo a
-          inquadrare lo scenario. <b>Non sostituiscono la disaggregazione ufficiale</b> del progetto INGV-DPC S1/MPS04, che va
-          richiesta per il nodo e il T<sub>R</sub> di interesse. Inserendo qui i valori di un report ufficiale, la matrice
-          diventa una rappresentazione illustrativa di quei valori.
+        <div class="disclaimer" style="margin:0 0 14px;">
+          <b>SismaSite non calcola la disaggregazione.</b> Inserire qui i valori medi M<sub>w</sub>, R ed ε riportati
+          nel <b>report ufficiale di disaggregazione INGV-DPC</b> (progetto S1, modello MPS04) per il nodo e il periodo di
+          ritorno di interesse, indicandone la fonte. Senza valori inseriti la sezione resta vuota.
         </div>
-
         <div class="field-row" style="grid-template-columns:1fr 1fr 1fr;">
           <div class="field">
             <label for="magMw">Magnitudo media M<sub>w</sub></label>
-            <input type="number" id="magMw" step="0.1" value="6.0">
+            <input type="number" id="magMw" step="0.01" placeholder="da report INGV">
           </div>
           <div class="field">
             <label for="distR">Distanza media R (km)</label>
-            <input type="number" id="distR" step="1" value="20">
+            <input type="number" id="distR" step="0.1" placeholder="da report INGV">
           </div>
           <div class="field">
             <label for="magEps">Epsilon media ε</label>
-            <input type="number" id="magEps" step="0.05" value="0.80">
+            <input type="number" id="magEps" step="0.01" placeholder="da report INGV">
           </div>
         </div>
-        <button class="btn btn-sm no-print" id="btnEstimateDisagg" style="margin-bottom:16px;">Stima automatica da posizione</button>
-
-        <div class="divider"></div>
-
-        <!-- Header sintetico: terremoto dominante -->
-        <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-600); margin-bottom:10px;">Scenario dominante <span style="text-transform:none; letter-spacing:0; font-weight:400; color:var(--warn);">(illustrativo)</span></h3>
-        <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);">
-          <div class="kpi"><div class="kpi-label">Magnitudo media M<sub>w</sub></div><div class="kpi-value" id="kpiDisaggMw">–</div></div>
-          <div class="kpi"><div class="kpi-label">Distanza media R</div><div class="kpi-value" id="kpiDisaggR">–</div><div class="kpi-unit">km</div></div>
-          <div class="kpi"><div class="kpi-label">Epsilon media ε</div><div class="kpi-value" id="kpiDisaggEps">–</div></div>
+        <div class="field">
+          <label for="disaggFonte">Fonte dei valori (report, nodo, T<sub>R</sub>)</label>
+          <input type="text" id="disaggFonte" placeholder="es. INGV-DPC S1, disaggregazione nodo ID …, TR 475 anni">
         </div>
-        <div class="alert alert-ok" id="disaggNote" style="margin-top:12px;"></div>
-
-        <div class="divider"></div>
-
-        <!-- Grafico di disaggregazione -->
-        <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-600); margin-bottom:6px;">Contributo per classi di magnitudo e distanza</h3>
-        <div class="chart-wrap" style="height:300px; padding:0 0 10px;"><canvas id="disaggChart"></canvas></div>
-        <div class="legend-note" id="disaggLegend"></div>
-
-        <!-- Matrice completa, comprimibile -->
-        <div class="no-print" style="margin-top:6px;">
-          <button class="btn btn-sm" id="btnToggleMatrix">Visualizza matrice completa M<sub>w</sub>–R</button>
-        </div>
-        <div id="matrixWrap" style="display:none; margin-top:14px;">
-          <div style="overflow-x:auto;">
-            <table class="data-table" id="disaggMatrixTable" style="min-width:720px;"></table>
-          </div>
-          <div class="disclaimer" style="margin-top:10px;">Percentuali per cella (M<sub>w</sub> × R) ottenute da una distribuzione bivariata semplificata centrata sui valori M<sub>w</sub>, R ed ε sopra indicati: <b>rappresentazione illustrativa</b>, non la disaggregazione ufficiale INGV.</div>
-        </div>
+        <div class="alert alert-warn" id="disaggNote" style="margin-top:6px;">Valori di disaggregazione non inseriti.</div>
       </div>
+    </div>
+
+    <div class="section-title">Inquadramento sismico del sito</div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Comune e classificazione sismica</h2></div>
+      <div class="panel-body" id="s2Body"><div class="hint">In attesa del calcolo…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Eventi sismici strumentali nel raggio</h2></div>
+      <div class="chart-toolbar no-print">
+        <label>Raggio:</label>
+        <select id="s3Raggio"><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
+        <label>Magnitudo ≥</label>
+        <select id="s3Mag"><option value="2.0">2,0</option><option value="2.5" selected>2,5</option><option value="3.0">3,0</option><option value="3.5">3,5</option><option value="4.0">4,0</option></select>
+        <label>Dal</label>
+        <input type="number" id="s3Anno" value="1985" min="1985" step="1" style="width:76px;">
+        <button class="btn btn-sm" id="s3Btn">Aggiorna</button>
+      </div>
+      <div class="panel-body" id="s3Body"><div class="hint">In attesa del calcolo…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Storia sismica della località</h2></div>
+      <div class="panel-body" id="s4Body"><div class="hint">In attesa del calcolo…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Terremoti storici con epicentro nel raggio</h2></div>
+      <div class="chart-toolbar no-print">
+        <label>Raggio:</label>
+        <select id="s4bRaggio"><option value="10">10 km</option><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
+      </div>
+      <div class="panel-body" id="s4bBody"><div class="hint">In attesa del calcolo…</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>Faglie attive e capaci (ITHACA)</h2></div>
+      <div class="chart-toolbar no-print">
+        <label>Raggio di ricerca (non normativo):</label>
+        <select id="s5Raggio"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="20">20 km</option></select>
+        <button class="btn btn-sm" id="s5Btn">Aggiorna</button>
+      </div>
+      <div class="panel-body" id="s5Body"><div class="hint">In attesa del calcolo…</div></div>
     </div>
 
     <div class="panel">
       <div class="panel-header"><h2>Screening pendii &amp; liquefazione</h2></div>
       <div class="panel-body">
+        <div class="hint" style="margin:0 0 10px;">I coefficienti k<sub>h</sub>, k<sub>v</sub> (β<sub>s</sub> da NTC 2018, Tab. 7.11.I) passeranno all'app <b>GeoHub-Versanti</b>; lo screening di liquefazione all'app <b>GeoHub-Liquefazione</b>.</div>
         <table class="data-table">
           <tr><td>Categoria topografica</td><td id="outTopo">–</td></tr>
           <tr><td>Coefficiente sismico orizzontale k<sub>h</sub></td><td id="outKh2">–</td></tr>
@@ -746,8 +769,8 @@ function islandAt(lat, lon){
   return null;
 }
 
-const APP_VERSION = '1.4.1';
-const APP_VERSION_DATE = '2026-10-31';
+const APP_VERSION = '1.5.0';
+const APP_VERSION_DATE = '2026-11-03';
 
 let GRID = null;      // rappresentazione interna unificata: {meta, count, id[], lon[], lat[], ag[t][i], F0[t][i], Tc[t][i]}
 let gridLoadError = null;
@@ -1283,12 +1306,12 @@ function runCalculation(){
       if(agg <= 0.1) betam = 0.20;
       else if(agg <= 0.2) betam = 0.27;
       else if(agg <= 0.4) betam = 0.30;
-      else betam = 0.36;                    // NON normativo: la Tab. 7.11.I si ferma a 0,4 g (vedi avviso)
+      else betam = NaN;                     // la Tab. 7.11.I si ferma a 0,4 g: kh, kv non calcolati (vedi avviso)
     } else {
       if(agg <= 0.1) betam = 0.20;
       else if(agg <= 0.2) betam = 0.24;
       else if(agg <= 0.4) betam = 0.28;
-      else betam = 0.32;                    // NON normativo: la Tab. 7.11.I si ferma a 0,4 g (vedi avviso)
+      else betam = NaN;                     // la Tab. 7.11.I si ferma a 0,4 g: kh, kv non calcolati (vedi avviso)
     }
     const kh = betam*amax;
     const kv = 0.5*kh;
@@ -1303,8 +1326,9 @@ function runCalculation(){
   updateReportHeader();
   renderHazardTable();
   renderSelectedLS();
-  refreshDisaggregation();
+  renderDisaggregation();
   renderLiquefaction();
+  aggiornaInquadramento(lat, lon);
 }
 
 /* Intestazione del report: sito, data, versione, coordinate, fonte, nodi usati.
@@ -1357,7 +1381,7 @@ function renderWarnings(){
   }
   const betaOut = Object.entries(lastResults.byLS).filter(([k,x])=>x.betaFuoriTabella);
   if(betaOut.length){
-    msgs.push(`<b>β<sub>s</sub> fuori dalla Tab. 7.11.I.</b> Per ${betaOut.map(([k,x])=>k+' (a<sub>g</sub> = '+x.ag.toFixed(3).replace('.', ',')+' g)').join(', ')} a<sub>g</sub> supera 0,4 g, limite superiore della tabella: è adottato β<sub>s</sub> = ${betaOut[0][1].betaS.toFixed(2).replace('.', ',')}, <b>scelta conservativa dell'applicativo, non prevista dalla norma</b>. Il valore di k<sub>h</sub> va giustificato dal progettista.`);
+    msgs.push(`<b>a<sub>g</sub> fuori dal campo della Tab. 7.11.I.</b> Per ${betaOut.map(([k,x])=>k+' (a<sub>g</sub> = '+x.ag.toFixed(3).replace('.', ',')+' g)').join(', ')} a<sub>g</sub> supera 0,4 g, limite superiore della tabella (NTC 2018, §7.11.3.5.2): β<sub>s</sub> non è definito dalla norma e <b>k<sub>h</sub>, k<sub>v</sub> non sono calcolati</b>. Il coefficiente va giustificato dal progettista.`);
   }
   if(lastResults.VR < 35){
     msgs.push(`<b>V<sub>R</sub> = ${lastResults.VR.toFixed(1).replace('.', ',')} anni.</b> Le NTC 2018 (§2.4.3) non prevedono più il valore minimo V<sub>R</sub> = 35 anni delle NTC 2008: il periodo di riferimento è usato così come risulta da V<sub>N</sub>·C<sub>U</sub>. Se il committente o un capitolato richiedono il criterio delle NTC 2008, impostare V<sub>N</sub> in modo che V<sub>R</sub> = 35 anni.`);
@@ -1405,7 +1429,7 @@ function renderSelectedLS(){
 
   document.getElementById('outTopo').textContent = lastResults.topoCat;
   document.getElementById('outKh2').textContent = fmt(r.kh,3);
-  document.getElementById('outKv2').textContent = '±' + fmt(r.kv,3);
+  document.getElementById('outKv2').textContent = isFinite(r.kv) ? '±' + fmt(r.kv,3) : '–';
 
   // costruzione spettro
   const Tmax = 4.0;
@@ -1544,216 +1568,32 @@ function renderDesignTablesOnly(r, q, qv, code, qIn){
 }
 
 /* ======================================================================
-   7. DISAGGREGAZIONE DELLA PERICOLOSITA' SISMICA
-   Header "terremoto dominante" (Mw, R, epsilon medi) + matrice bivariata
-   Mw-R + grafico a barre impilate, sullo stile dei grafici di
-   disaggregazione INGV (MPS04/S1).
-
-   IMPORTANTE: la matrice di contributo per cella (%) qui generata è un
-   MODELLO ILLUSTRATIVO (gaussiana bivariata in Mw ed R, calibrata sui
-   valori medi Mw/R/epsilon), NON i dati reali di disaggregazione INGV per
-   il nodo e il TR esatti. La disaggregazione ufficiale richiede l'analisi
-   probabilistica completa (PSHA) sui cataloghi di sorgente reali e va
-   richiesta al servizio INGV (progetto MPS04/S1) per un uso professionale.
+   7. DISAGGREGAZIONE DELLA PERICOLOSITA' SISMICA (solo inserimento manuale)
+   Dalla v1.5.0 l'app non stima più M_w, R ed epsilon: la disaggregazione
+   ufficiale (INGV-DPC, progetto S1 / MPS04) va letta dal report del nodo e
+   inserita a mano, con la fonte. Nessuna matrice né grafico sintetico.
 ====================================================================== */
-
-const MW_EDGES = [4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0];
-const R_EDGES  = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 999];
-const MW_COLORS = ['#dbe7f5','#bcd6ee','#94bde3','#6ea3d6','#4d89c7','#2f7dd6','#1f5fab','#153f73'];
-
-function mwBinLabel(i){ return `${MW_EDGES[i].toFixed(1)}–${MW_EDGES[i+1].toFixed(1)}`; }
-function rBinLabel(i){ return R_EDGES[i+1] > 500 ? `${R_EDGES[i]}+` : `${R_EDGES[i]}–${R_EDGES[i+1]}`; }
-
-// Usa la stessa interpolazione ufficiale (hazardAtTR) già impiegata per gli spettri,
-// così la stima è coerente con il resto dell'app invece di duplicare la logica.
-function estimateDisaggregation(lat, lon, TR){
-  const haz = hazardAtTR(lat, lon, TR);
-  const ag = haz.ag;
-  let Mw, R, eps;
-  if(ag >= 0.25){ Mw = 6.3; R = 12; eps = 0.3; }
-  else if(ag >= 0.18){ Mw = 5.9; R = 18; eps = 0.6; }
-  else if(ag >= 0.10){ Mw = 5.5; R = 25; eps = 1.0; }
-  else { Mw = 5.0; R = 35; eps = 1.5; }
-
-  // Correzione in funzione del periodo di ritorno: TR più lunghi (eventi più
-  // rari) tendono a scenari leggermente più energetici e con epsilon più alto.
-  const trAdj = Math.log(TR/475) / Math.log(2475/475); // ~ -1.5..+1 nel range dei TR di norma
-  Mw  = clamp(Mw + trAdj*0.15, 4.5, 7.8);
-  eps = clamp(eps + trAdj*0.45, 0.0, 2.3);
-  R   = clamp(R - trAdj*3, 5, 60);
-
-  return { Mw: Math.round(Mw*10)/10, R: Math.round(R), eps: Math.round(eps*100)/100 };
-}
-
-// Distribuzione bivariata illustrativa Mw x R, normalizzata a 100%
-function buildDisaggMatrix(Mw, R, eps){
-  const sigmaM = 0.55;
-  const sigmaR = Math.max(8, R*0.45);
-
-  const mwMid = []; for(let i=0;i<MW_EDGES.length-1;i++) mwMid.push((MW_EDGES[i]+MW_EDGES[i+1])/2);
-  const rMid  = []; for(let i=0;i<R_EDGES.length-1;i++)  rMid.push(R_EDGES[i+1] > 500 ? R_EDGES[i]+15 : (R_EDGES[i]+R_EDGES[i+1])/2);
-
-  let raw = [], total = 0;
-  for(let mi=0; mi<mwMid.length; mi++){
-    raw.push([]);
-    for(let ri=0; ri<rMid.length; ri++){
-      const wM = Math.exp(-0.5*Math.pow((mwMid[mi]-Mw)/sigmaM, 2));
-      const wR = Math.exp(-0.5*Math.pow((rMid[ri]-R)/sigmaR, 2));
-      // sposta lievemente il peso verso magnitudo più alta al crescere di epsilon
-      // (scenari a epsilon elevato sono tipicamente associati a eventi più energetici)
-      const epsShift = Math.max(0.05, 1 + (eps-1)*0.15*(mwMid[mi]-Mw)/sigmaM);
-      const w = wM*wR*epsShift;
-      raw[mi].push(w);
-      total += w;
-    }
-  }
-  const pct = raw.map(row => row.map(v => (v/total)*100));
-
-  let best = {mi:0, ri:0, val:-1};
-  pct.forEach((row,mi)=> row.forEach((v,ri)=>{ if(v>best.val) best = {mi, ri, val:v}; }));
-
-  return { pct, dominant: best };
-}
-
-function geoSynthesisNote(Mw, R, eps){
-  const range = R < 15 ? 'corto raggio' : (R < 40 ? 'medio raggio' : 'lungo raggio');
-  const mag = Mw < 5.0 ? 'magnitudo contenuta' : (Mw < 6.2 ? 'magnitudo moderata' : 'magnitudo elevata');
-  const epsNote = eps < 0.6
-    ? "coerente con l'attività sismica ordinaria dell'area"
-    : (eps < 1.2 ? 'con un contributo apprezzabile di eventi non ordinari' : "dominato da eventi non ordinari, relativamente rari per l'area");
-  return `Sismicità dominante a ${range} con ${mag} (M<sub>w</sub> ≈ ${Mw.toFixed(1)}, R ≈ ${R.toFixed(0)} km), ${epsNote} (ε ≈ ${eps.toFixed(2)}).`;
-}
-
-let disaggChart = null;
-function renderDisaggChart(pct){
-  if(!chartDisponibile()){ mostraGraficoNonDisponibile('#disaggChart', 220); return; }
-  const ctx = document.getElementById('disaggChart').getContext('2d');
-  const rLabels = R_EDGES.slice(0,-1).map((_,i)=>rBinLabel(i));
-  const datasets = pct.map((row, mi) => ({
-    label: mwBinLabel(mi),
-    data: row,
-    backgroundColor: MW_COLORS[mi],
-    borderWidth: 0,
-  }));
-  if(disaggChart) disaggChart.destroy();
-  disaggChart = new Chart(ctx, {
-    type:'bar',
-    data:{ labels: rLabels, datasets },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      animation:{duration:250},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          callbacks:{
-            title:(items)=> 'R = '+items[0].label+' km',
-            label:(item)=> `M_w ${item.dataset.label}: ${item.parsed.y.toFixed(1)}%`
-          }
-        }
-      },
-      scales:{
-        x:{ stacked:true, title:{display:true, text:'Distanza R (km)'} },
-        y:{ stacked:true, beginAtZero:true, title:{display:true, text:'Contributo (%)'} }
-      }
-    }
-  });
-
-  const legend = document.getElementById('disaggLegend');
-  legend.innerHTML = pct.map((_,mi)=>
-    `<span><span class="legend-swatch" style="background:${MW_COLORS[mi]};"></span>M<sub>w</sub> ${mwBinLabel(mi)}</span>`
-  ).join('');
-}
-
-function renderDisaggMatrixTable(pct, dominant){
-  const table = document.getElementById('disaggMatrixTable');
-  const maxV = Math.max(...pct.flat());
-  let html = '<thead><tr><th>M<sub>w</sub> \\ R (km)</th>';
-  for(let ri=0; ri<pct[0].length; ri++) html += `<th>${rBinLabel(ri)}</th>`;
-  html += '</tr></thead><tbody>';
-  pct.forEach((row, mi)=>{
-    html += `<tr><th style="text-align:left;">${mwBinLabel(mi)}</th>`;
-    row.forEach((v, ri)=>{
-      const intensity = maxV > 0 ? v/maxV : 0;
-      const bg = `rgba(47,125,214,${(intensity*0.65).toFixed(2)})`;
-      const isDominant = (mi===dominant.mi && ri===dominant.ri);
-      html += `<td style="background:${bg}; ${isDominant?'font-weight:700; outline:2px solid var(--accent-dark); outline-offset:-2px;':''}">${v.toFixed(1)}</td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody>';
-  table.innerHTML = html;
-}
-
 function renderDisaggregation(){
-  const Mw = parseFloat(document.getElementById('magMw').value);
-  const R = parseFloat(document.getElementById('distR').value);
-  const eps = parseFloat(document.getElementById('magEps').value);
-  if(isNaN(Mw) || isNaN(R) || isNaN(eps)) return;
-
-  document.getElementById('kpiDisaggMw').textContent = Mw.toFixed(1);
-  document.getElementById('kpiDisaggR').textContent = R.toFixed(0);
-  document.getElementById('kpiDisaggEps').textContent = eps.toFixed(2);
-  document.getElementById('disaggNote').innerHTML = geoSynthesisNote(Mw, R, eps);
-
   if(lastResults){
     const code = document.getElementById('lsSelect').value;
     document.getElementById('disaggTRLabel').textContent = lastResults.byLS[code].TR.toFixed(0);
   }
-
-  const { pct, dominant } = buildDisaggMatrix(Mw, R, eps);
-  renderDisaggChart(pct);
-  renderDisaggMatrixTable(pct, dominant);
-}
-
-// Traccia se i campi Mw/R/eps sono in modalità "auto" (seguono il TR
-// selezionato) oppure sono stati impostati manualmente dall'utente (es.
-// perché ha inserito i valori di un report di disaggregazione ufficiale).
-// In modalità auto, ogni ricalcolo o cambio di stato limite aggiorna la
-// stima; in modalità manuale, i valori inseriti dall'utente non vengono
-// mai sovrascritti da un ricalcolo.
-let disaggAutoTrack = true;
-
-// Da chiamare dopo ogni runCalculation() e ad ogni cambio di stato limite:
-// in modalità auto ricalcola Mw/R/eps per il TR corrente, poi in ogni caso
-// aggiorna KPI, nota di sintesi, grafico e matrice.
-function refreshDisaggregation(){
-  if(!lastResults) return;
-  if(disaggAutoTrack){
-    const code = document.getElementById('lsSelect').value;
-    const TR = lastResults.byLS[code].TR;
-    const est = estimateDisaggregation(lastResults.lat, lastResults.lon, TR);
-    document.getElementById('magMw').value = est.Mw.toFixed(1);
-    document.getElementById('distR').value = est.R.toFixed(0);
-    document.getElementById('magEps').value = est.eps.toFixed(2);
+  const v = id => parseFloat(document.getElementById(id).value);
+  const Mw = v('magMw'), R = v('distR'), eps = v('magEps');
+  const fonte = (document.getElementById('disaggFonte').value || '').trim();
+  const note = document.getElementById('disaggNote');
+  if(isNaN(Mw) && isNaN(R) && isNaN(eps)){
+    note.className = 'alert alert-warn';
+    note.innerHTML = 'Valori di disaggregazione non inseriti.';
+    return;
   }
-  renderDisaggregation();
+  const f = (x,d) => isNaN(x) ? '–' : x.toFixed(d).replace('.', ',');
+  note.className = fonte ? 'alert alert-ok' : 'alert alert-warn';
+  note.innerHTML = `Valori inseriti dall'utente: M<sub>w</sub> = <b>${f(Mw,2)}</b>, R = <b>${f(R,1)} km</b>, ε = <b>${f(eps,2)}</b>. ` +
+    (fonte ? `Fonte dichiarata: ${escapeHtml(fonte)}.` : '<b>Indicare la fonte dei valori</b> (report INGV-DPC, nodo, T<sub>R</sub>).');
 }
-
-['magMw','distR','magEps'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', ()=>{
-    disaggAutoTrack = false; // l'utente ha preso il controllo manuale dei valori
-    renderDisaggregation();
-  });
-});
-
-document.getElementById('btnEstimateDisagg').addEventListener('click', ()=>{
-  disaggAutoTrack = true; // torna a seguire automaticamente il TR selezionato
-  const lat = parseFloat(document.getElementById('lat').value);
-  const lon = parseFloat(document.getElementById('lon').value);
-  const code = lastResults ? document.getElementById('lsSelect').value : 'SLV';
-  const TR = lastResults ? lastResults.byLS[code].TR : 475;
-  const est = estimateDisaggregation(lat, lon, TR);
-  document.getElementById('magMw').value = est.Mw.toFixed(1);
-  document.getElementById('distR').value = est.R.toFixed(0);
-  document.getElementById('magEps').value = est.eps.toFixed(2);
-  renderDisaggregation();
-});
-
-document.getElementById('btnToggleMatrix').addEventListener('click', (e)=>{
-  const wrap = document.getElementById('matrixWrap');
-  const show = wrap.style.display === 'none';
-  wrap.style.display = show ? 'block' : 'none';
-  e.target.textContent = show ? 'Nascondi matrice completa' : 'Visualizza matrice completa Mw–R';
+['magMw','distR','magEps','disaggFonte'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', renderDisaggregation);
 });
 
 /* ======================================================================
@@ -1833,12 +1673,417 @@ function renderLiquefaction(){
 }
 
 /* ======================================================================
+   10. INQUADRAMENTO SISMICO DEL SITO (dalla v1.5.0) — sezione E1
+   S2 comune e classificazione sismica (ISTAT 2026 + DPC maggio 2025)
+   S3 eventi strumentali nel raggio (INGV, servizio FDSN, tempo reale)
+   S4 storia sismica della località (DBMI15 v4.0) e terremoti storici
+      nel raggio (CPTI15 v4.0)
+   S5 faglie attive e capaci (ISPRA ITHACA, tempo reale)
+   I file dati sono caricati solo alla prima richiesta.
+====================================================================== */
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const num1 = (x,d=1) => (x === null || x === undefined || !isFinite(x)) ? '–' : Number(x).toFixed(d).replace('.', ',');
+
+const _jsonCache = {};
+function caricaJSON(url){
+  if(!_jsonCache[url]){
+    _jsonCache[url] = fetch(url).then(r=>{
+      if(!r.ok) throw new Error(url + ': HTTP ' + r.status);
+      return r.json();
+    }).catch(e=>{ delete _jsonCache[url]; throw e; });
+  }
+  return _jsonCache[url];
+}
+
+// Distanza in km tra il punto (lat0, lon0) e il segmento A-B, su piano locale
+// equirettangolare centrato sul punto (errore trascurabile entro qualche decina di km).
+function distPuntoSegmentoKm(lat0, lon0, la1, lo1, la2, lo2){
+  const ky = 111.195, kx = 111.195*Math.cos(lat0*Math.PI/180);
+  const ax = (lo1-lon0)*kx, ay = (la1-lat0)*ky, bx = (lo2-lon0)*kx, by = (la2-lat0)*ky;
+  const dx = bx-ax, dy = by-ay, L2 = dx*dx+dy*dy;
+  let t = L2 > 0 ? -(ax*dx+ay*dy)/L2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  const px = ax+t*dx, py = ay+t*dy;
+  return Math.sqrt(px*px+py*py);
+}
+
+let inqLayer = null;   // layer Leaflet per confine comunale e faglie
+function layerInquadramento(){
+  if(typeof L === 'undefined' || !map) return null;
+  if(!inqLayer) inqLayer = { comune: L.layerGroup().addTo(map), faglie: L.layerGroup().addTo(map) };
+  return inqLayer;
+}
+
+let inqSito = null;    // {lat, lon} dell'ultimo calcolo
+function aggiornaInquadramento(lat, lon){
+  inqSito = {lat, lon};
+  s2Aggiorna(); s3Aggiorna(); s4Aggiorna(); s5Aggiorna();
+}
+
+/* ------------------------------------------------------------------
+   S2 — Comune (confini ISTAT) e classificazione sismica (DPC)
+------------------------------------------------------------------ */
+const S2_SOGLIA_CONFINE_KM = 0.2;   // entro 200 m dal confine si chiede conferma
+let s2Stato = null;                  // {candidati, scelto}
+
+function decodificaAnelli(c){
+  if(c._r) return c._r;
+  c._r = c[3].map(f=>{
+    const pts = []; let x = f[0], y = f[1]; pts.push([y/1e5, x/1e5]);
+    for(let i=2; i<f.length; i+=2){ x += f[i]; y += f[i+1]; pts.push([y/1e5, x/1e5]); }
+    return pts;   // [lat, lon]
+  });
+  return c._r;
+}
+function dentroAnello(lat, lon, r){
+  let c = false;
+  for(let i=0, j=r.length-1; i<r.length; j=i++){
+    const yi=r[i][0], xi=r[i][1], yj=r[j][0], xj=r[j][1];
+    if((yi>lat) !== (yj>lat) && lon < (xj-xi)*(lat-yi)/(yj-yi)+xi) c = !c;
+  }
+  return c;
+}
+function distanzaConfineKm(lat, lon, anelli){
+  let d = Infinity;
+  for(const r of anelli) for(let i=1; i<r.length; i++)
+    d = Math.min(d, distPuntoSegmentoKm(lat, lon, r[i-1][0], r[i-1][1], r[i][0], r[i][1]));
+  return d;
+}
+function individuaComune(lat, lon, comuni){
+  const m = 0.03;  // margine in gradi per i candidati vicini (~3 km)
+  let dentro = null; const vicini = [];
+  for(const c of comuni){
+    const b = c[2];
+    if(lon < b[0]-m || lon > b[2]+m || lat < b[1]-m || lat > b[3]+m) continue;
+    const an = decodificaAnelli(c);
+    const inBox = lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3];
+    let n = 0; if(inBox) for(const r of an) if(dentroAnello(lat, lon, r)) n++;
+    const d = distanzaConfineKm(lat, lon, an);
+    if(n % 2 === 1) dentro = {c, d};
+    else vicini.push({c, d});
+  }
+  vicini.sort((a,b)=>a.d-b.d);
+  return {dentro, vicini};
+}
+
+async function s2Aggiorna(){
+  const box = document.getElementById('s2Body');
+  const {lat, lon} = inqSito;
+  box.innerHTML = '<div class="hint">Individuazione del comune…</div>';
+  try{
+    const [CC, CL] = await Promise.all([caricaJSON('comuni-data.json'), caricaJSON('classificazione-data.json')]);
+    if(!inqSito || inqSito.lat !== lat || inqSito.lon !== lon) return;
+    const {dentro, vicini} = individuaComune(lat, lon, CC.comuni);
+    let candidati = [];
+    if(dentro){
+      candidati.push({c:dentro.c, d:0, dc:dentro.d});
+      vicini.filter(v=>v.d <= S2_SOGLIA_CONFINE_KM).forEach(v=>candidati.push({c:v.c, d:v.d}));
+    } else {
+      vicini.filter(v=>v.d <= 2).slice(0,3).forEach(v=>candidati.push({c:v.c, d:v.d}));
+    }
+    s2Stato = {candidati, scelto:0, CC, CL, dentro:!!dentro};
+    s2Render();
+  }catch(e){
+    box.innerHTML = `<div class="alert alert-danger">File dei confini o della classificazione non caricato (${escapeHtml(e.message)}).</div>`;
+  }
+}
+
+function s2Render(){
+  const box = document.getElementById('s2Body');
+  const st = s2Stato;
+  const lay = layerInquadramento(); if(lay) lay.comune.clearLayers();
+  if(!st.candidati.length){
+    box.innerHTML = `<div class="alert alert-warn">Il punto non ricade in alcun comune (mare o fuori dal territorio nazionale) e non ci sono comuni entro 2 km.</div>`;
+    return;
+  }
+  const cand = st.candidati[st.scelto];
+  const [codice, nomeIstat] = cand.c;
+  const cl = st.CL.comuni[codice];
+  let html = '';
+
+  if(!st.dentro){
+    html += `<div class="alert alert-warn"><span class="alert-title">Punto esterno ai confini comunali</span>
+      Il punto non ricade in alcun comune secondo i confini ISTAT generalizzati (es. tratto di costa): è proposto il comune più vicino. Verificare.</div>`;
+  } else if(st.candidati.length > 1){
+    html += `<div class="alert alert-warn no-print"><span class="alert-title">Punto vicino al confine comunale (entro ${S2_SOGLIA_CONFINE_KM*1000} m)</span>
+      I confini ISTAT generalizzati non hanno scala certificabile uniformemente: verificare il comune e, se necessario, sceglierlo qui.<br>` +
+      st.candidati.map((k,i)=>`<label style="margin-right:14px; white-space:nowrap;"><input type="radio" name="s2Scelta" value="${i}" ${i===st.scelto?'checked':''}> ${escapeHtml(k.c[1])}${i===0?' (contiene il punto)':' ('+num1(k.d*1000,0)+' m)'}</label>`).join('') +
+      `</div>`;
+  }
+
+  if(!cl){
+    html += `<div class="alert alert-danger">Comune ${escapeHtml(nomeIstat)} (ISTAT ${codice}) non trovato nell'elenco DPC della classificazione.</div>`;
+    box.innerHTML = html; return;
+  }
+  const [nome, prov, iReg, zona, codDpc] = cl;
+  const principali = [...new Set((zona.match(/[1-4]/g) || []).map(Number))];
+  const sottozona = /[A-Za-z]/.test(zona);
+  const diviso = zona.includes('-');
+  let descr = principali.length === 1
+    ? `zona ${principali[0]}` + (sottozona ? ` (sottozona ${escapeHtml(zona)} definita dalla Regione)` : '')
+    : `zone ${principali.join(' e ')} (sottozone ${escapeHtml(zona)})`;
+
+  html += `<table class="data-table">
+    <tr><td>Comune</td><td><b>${escapeHtml(nome)}</b> (${escapeHtml(prov)}) – ${escapeHtml(st.CL.regioni[iReg])}</td></tr>
+    <tr><td>Codice ISTAT</td><td>${codice}${codDpc && codDpc !== codice ? ` <span class="hint">(nel file DPC: ${codDpc})</span>` : ''}</td></tr>
+    <tr><td>Classificazione sismica (codice DPC)</td><td><b>${escapeHtml(zona)}</b> — ${descr}</td></tr>
+  </table>`;
+  if(st.candidati.length > 1 && st.dentro){
+    html += `<div class="hint" style="margin-top:6px;">Punto a meno di ${S2_SOGLIA_CONFINE_KM*1000} m dal confine comunale: comune ${st.scelto ? "scelto dall'utente" : "che contiene il punto secondo i confini ISTAT generalizzati"}.</div>`;
+  }
+  if(diviso){
+    html += `<div class="alert alert-warn" style="margin-top:10px;"><span class="alert-title">Comune suddiviso in più sottozone</span>
+      Il comune ricade in più sottozone (${escapeHtml(zona)}): verificare la perimetrazione nell'atto regionale di classificazione.</div>`;
+  }
+  html += `<div class="alert alert-warn" style="margin-top:10px;"><span class="alert-title">Solo fini programmatori e amministrativi</span>
+    La classificazione sismica dei comuni non incide sulla progettazione: secondo le NTC 2018 l'azione sismica si determina dalla pericolosità di base del sito (sezione precedente). Non usare la zona per il calcolo.</div>`;
+  html += `<div class="disclaimer">Fonti: classificazione — Dipartimento della Protezione Civile, <a href="${st.CL.meta.url}" target="_blank" rel="noopener">${escapeHtml(st.CL.meta.titolo)}</a> (raccolta delle disposizioni regionali;
+    <a href="${st.CL.meta.atti_regionali}" target="_blank" rel="noopener">elenco degli atti regionali</a>), CC BY 4.0 ·
+    comune — ISTAT, confini delle unità amministrative al 1° gennaio 2026 (versione generalizzata, semplificata), CC BY 4.0.</div>`;
+  box.innerHTML = html;
+  box.querySelectorAll('input[name=s2Scelta]').forEach(el=>el.addEventListener('change', e=>{
+    s2Stato.scelto = parseInt(e.target.value, 10); s2Render();
+  }));
+  if(lay){
+    decodificaAnelli(cand.c).forEach(r=>L.polygon(r, {color:'#2f7dd6', weight:1.5, fill:false, dashArray:'4 4', interactive:false}).addTo(lay.comune));
+  }
+}
+
+/* ------------------------------------------------------------------
+   S3 — Eventi strumentali nel raggio (INGV FDSN, tempo reale)
+------------------------------------------------------------------ */
+const S3_LIMITE = 2000;
+let s3Richiesta = 0;
+async function s3Aggiorna(){
+  if(!inqSito) return;
+  const box = document.getElementById('s3Body');
+  const {lat, lon} = inqSito;
+  const R = parseFloat(document.getElementById('s3Raggio').value);
+  const M = parseFloat(document.getElementById('s3Mag').value);
+  let anno = parseInt(document.getElementById('s3Anno').value, 10);
+  if(!(anno >= 1985)) anno = 1985;
+  const id = ++s3Richiesta;
+  const url = `https://webservices.ingv.it/fdsnws/event/1/query?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}` +
+              `&maxradiuskm=${R}&minmag=${M}&starttime=${anno}-01-01&format=text&orderby=time&limit=${S3_LIMITE}`;
+  box.innerHTML = '<div class="hint">Interrogazione del servizio INGV…</div>';
+  let testo = '';
+  try{
+    const r = await fetch(url);
+    if(r.status === 204) testo = '';
+    else if(!r.ok) throw new Error('HTTP ' + r.status);
+    else testo = await r.text();
+  }catch(e){
+    if(id !== s3Richiesta) return;
+    box.innerHTML = `<div class="alert alert-danger">Servizio INGV non raggiungibile (${escapeHtml(e.message)}). Riprovare più tardi.</div>`;
+    return;
+  }
+  if(id !== s3Richiesta) return;
+  const righe = testo.split('\n').filter(l=>l.trim() && !l.startsWith('#'));
+  const ev = [];
+  let esclusi = 0;
+  for(const l of righe){
+    const c = l.split('|');
+    if(c.length < 14) continue;
+    if((c[13] || '').trim() && c[13].trim() !== 'earthquake'){ esclusi++; continue; }
+    const la = parseFloat(c[2]), lo = parseFloat(c[3]);
+    ev.push({id:c[0], t:c[1], lat:la, lon:lo, dep:parseFloat(c[4]), mt:c[9], m:parseFloat(c[10]), loc:c[12],
+             d: haversineKm(lat, lon, la, lo)});
+  }
+  let html = '';
+  const maxM = ev.reduce((a,e)=>Math.max(a, e.m), -Infinity);
+  html += `<div class="hint" style="margin-bottom:8px;">Raggio ${R} km · magnitudo ≥ ${num1(M,1)} · dal ${anno} a oggi: <b>${ev.length}</b> eventi` +
+          (ev.length ? ` · magnitudo massima ${num1(maxM,1)}` : '') + (esclusi ? ` · esclusi ${esclusi} eventi non tettonici (es. esplosioni)` : '') + `.</div>`;
+  if(righe.length >= S3_LIMITE){
+    html += `<div class="alert alert-warn">Raggiunto il limite di ${S3_LIMITE} eventi: l'elenco è incompleto. Aumentare la magnitudo minima o ridurre il raggio.</div>`;
+  }
+  if(ev.length){
+    html += `<div class="scroll-box"><table class="data-table"><thead><tr><th>Data e ora (UTC)</th><th>Magnitudo</th><th>Prof. (km)</th><th>Distanza (km)</th><th>Località</th></tr></thead><tbody>` +
+      ev.map(e=>`<tr><td>${escapeHtml(e.t.slice(0,19).replace('T',' '))}</td><td>${escapeHtml(e.mt)} ${num1(e.m,1)}</td><td>${num1(e.dep,1)}</td><td>${num1(e.d,1)}</td><td>${escapeHtml(e.loc)}</td></tr>`).join('') +
+      `</tbody></table></div>`;
+  }
+  html += `<div class="disclaimer"><b>Completezza e confrontabilità.</b> Eventi di epoche diverse non sono automaticamente confrontabili: la capacità di rilevamento della rete sismica è cambiata nel tempo, e la soglia di magnitudo è significativa solo dove il catalogo è completo. L'elenco riporta il tipo di magnitudo di ciascun evento (es. ML, Md, Mw): il filtro agisce sulla magnitudo preferita dal catalogo. Le localizzazioni più recenti possono essere provvisorie.<br>
+    Fonte: INGV – Istituto Nazionale di Geofisica e Vulcanologia, servizio FDSN <a href="https://terremoti.ingv.it/webservices_and_software/" target="_blank" rel="noopener">webservices.ingv.it</a> (catalogo ISIDe), CC BY 4.0. Interrogazione del ${new Date().toLocaleDateString('it-IT')}.</div>`;
+  box.innerHTML = html;
+}
+
+/* ------------------------------------------------------------------
+   S4 — Storia sismica della località (DBMI15) e terremoti storici nel
+   raggio (CPTI15)
+------------------------------------------------------------------ */
+const INT_DESCR = {   // codici non numerici, DBMI15 v4.0 (INGV, Tab. 3)
+  'G':'indicazione generica di danno', 'NF':'non avvertito', 'NC':'non classificato', 'SF':'avvertito leggermente',
+  'F':'avvertito', 'HF':'avvertito distintamente', 'SD':'danno leggero', 'D':'danno', 'HD':'danno grave'
+};
+let S4 = null;   // dati + indice osservazioni per località
+async function s4Dati(){
+  if(S4) return S4;
+  const D = await caricaJSON('storica-data.json');
+  const perLoc = Array.from({length: D.pl.id.length}, ()=>[]);
+  D.obs.pl.forEach((p,k)=>perLoc[p].push(k));
+  S4 = {D, perLoc};
+  return S4;
+}
+function dataEvento(D, e){
+  const p2 = v => v ? String(v).padStart(2,'0') : '';
+  const y = D.eq.y[e], mo = D.eq.mo[e], d = D.eq.d[e];
+  return y + (mo ? '-' + p2(mo) : '') + (d ? '-' + p2(d) : '');
+}
+function ordineEvento(D, e){ return D.eq.y[e]*10000 + (D.eq.mo[e]||0)*100 + (D.eq.d[e]||0); }
+
+let s4Scelta = null;
+async function s4Aggiorna(){
+  if(!inqSito) return;
+  const box = document.getElementById('s4Body');
+  const {lat, lon} = inqSito;
+  box.innerHTML = '<div class="hint">Caricamento dei cataloghi INGV…</div>';
+  try{
+    const {D} = await s4Dati();
+    if(!inqSito || inqSito.lat !== lat || inqSito.lon !== lon) return;
+    const dist = D.pl.id.map((_,i)=>({i, d: haversineKm(lat, lon, D.pl.lat[i], D.pl.lon[i])}));
+    dist.sort((a,b)=>a.d-b.d);
+    const vicine = dist.filter((x,k)=>k===0 || x.d <= 10).slice(0, 12);
+    s4Scelta = {vicine, sel: vicine[0].i};
+    s4Render();
+  }catch(e){
+    box.innerHTML = `<div class="alert alert-danger">Cataloghi storici non caricati (${escapeHtml(e.message)}).</div>`;
+  }
+  s4bRender();
+}
+function s4Render(){
+  const box = document.getElementById('s4Body');
+  const {D, perLoc} = S4;
+  const i = s4Scelta.sel;
+  const voce = s4Scelta.vicine.find(v=>v.i===i);
+  const obs = perLoc[i].slice().sort((a,b)=>ordineEvento(D, D.obs.eq[a]) - ordineEvento(D, D.obs.eq[b]));
+  const codici = new Set();
+  let maxIs = -1, maxCod = '';
+  obs.forEach(k=>{
+    const ci = D.obs.int[k], cod = D.int.codici[ci], v = D.int.valore_ordinamento[ci];
+    if(/[A-Z]/.test(cod)) codici.add(cod);
+    if(/^[0-9]/.test(cod) && v > maxIs){ maxIs = v; maxCod = cod; }
+  });
+  let html = `<div class="field no-print" style="margin-bottom:8px;"><label for="s4Loc">Località DBMI15 (la più vicina è proposta automaticamente)</label>
+    <select id="s4Loc">` + s4Scelta.vicine.map(v=>`<option value="${v.i}" ${v.i===i?'selected':''}>${escapeHtml(D.pl.nome[v.i])} (${escapeHtml(D.pl.prov[v.i]||'')}) – ${num1(v.d,1)} km · ${perLoc[v.i].length} osservazioni</option>`).join('') +
+    `</select></div>`;
+  html += `<table class="data-table" style="margin-bottom:8px;">
+    <tr><td>Località</td><td><b>${escapeHtml(D.pl.nome[i])}</b> (${escapeHtml(D.pl.prov[i]||'')}) – identificativo ${escapeHtml(D.pl.id[i])} – ${num1(voce.d,1)} km dal sito</td></tr>
+    <tr><td>Osservazioni macrosismiche</td><td>${obs.length}${maxCod ? ` · intensità massima osservata I<sub>s</sub> = ${escapeHtml(maxCod)} MCS` : ''}</td></tr>
+  </table>`;
+  if(obs.length){
+    html += `<div class="scroll-box"><table class="data-table"><thead><tr><th>Data</th><th>Area epicentrale</th><th>I<sub>s</sub> (MCS)</th><th>I<sub>0</sub></th><th>M<sub>w</sub></th></tr></thead><tbody>` +
+      obs.map(k=>{ const e = D.obs.eq[k]; const cod = D.int.codici[D.obs.int[k]];
+        return `<tr><td>${dataEvento(D,e)}</td><td>${escapeHtml(D.eq.area[e])}</td><td><b>${escapeHtml(cod)}</b></td><td>${escapeHtml(D.eq.io[e] ?? '–')}</td><td>${num1(D.eq.mw[e],2)}</td></tr>`; }).join('') +
+      `</tbody></table></div>`;
+  }
+  if(codici.size){
+    html += `<div class="hint" style="margin-top:6px;">Codici: ` + [...codici].map(c=>`<b>${c}</b> = ${INT_DESCR[c] || 'v. DBMI15'}`).join(' · ') + `.</div>`;
+  }
+  html += `<div class="disclaimer"><b>Attenzione.</b> ${escapeHtml(D.meta.avviso)} La località è scelta per vicinanza al sito: verificare che sia rappresentativa (es. capoluogo o frazione).<br>
+    Fonti: ${D.meta.citazioni.map(escapeHtml).join(' · ')} · Licenza dei dati ${escapeHtml(D.meta.licenza)}.</div>`;
+  box.innerHTML = html;
+  document.getElementById('s4Loc').addEventListener('change', e=>{ s4Scelta.sel = parseInt(e.target.value,10); s4Render(); });
+}
+function s4bRender(){
+  const box = document.getElementById('s4bBody');
+  if(!S4 || !inqSito){ return; }
+  const {D} = S4; const {lat, lon} = inqSito;
+  const R = parseFloat(document.getElementById('s4bRaggio').value);
+  const ev = [];
+  for(let e=0; e<D.eq.id.length; e++){
+    if(D.eq.lat[e] == null || D.eq.lon[e] == null) continue;
+    const d = haversineKm(lat, lon, D.eq.lat[e], D.eq.lon[e]);
+    if(d <= R) ev.push({e, d});
+  }
+  ev.sort((a,b)=>ordineEvento(D,a.e)-ordineEvento(D,b.e));
+  const maxMw = ev.reduce((a,x)=>Math.max(a, D.eq.mw[x.e] ?? -1), -1);
+  let html = `<div class="hint" style="margin-bottom:8px;">Epicentri CPTI15 entro ${R} km dal sito: <b>${ev.length}</b> terremoti` + (ev.length ? ` · M<sub>w</sub> massima ${num1(maxMw,2)}` : '') + `.</div>`;
+  if(ev.length){
+    html += `<div class="scroll-box"><table class="data-table"><thead><tr><th>Data</th><th>Area epicentrale</th><th>I<sub>0</sub></th><th>M<sub>w</sub></th><th>Distanza (km)</th></tr></thead><tbody>` +
+      ev.map(({e,d})=>`<tr><td>${dataEvento(D,e)}</td><td>${escapeHtml(D.eq.area[e])}</td><td>${escapeHtml(D.eq.io[e] ?? '–')}</td><td>${num1(D.eq.mw[e],2)}</td><td>${num1(d,1)}</td></tr>`).join('') +
+      `</tbody></table></div>`;
+  }
+  html += `<div class="disclaimer">CPTI15 v4.0 copre il periodo 1000–2020 con terremoti di intensità massima ≥ 5 o magnitudo M<sub>w</sub> ≥ 4,0 (soglie diverse per l'area etnea e per Ischia-Campi Flegrei); per gli eventi successivi vedere la sezione degli eventi strumentali. Le coordinate degli epicentri storici sono stime.<br>
+    Fonte: ${escapeHtml(D.meta.citazioni[0])} · Licenza dei dati ${escapeHtml(D.meta.licenza)}.</div>`;
+  box.innerHTML = html;
+}
+
+/* ------------------------------------------------------------------
+   S5 — Faglie attive e capaci (ISPRA ITHACA, tempo reale)
+------------------------------------------------------------------ */
+const ITHACA_URL = 'https://sinacloud.isprambiente.it/arcgisgeo/rest/services/servizi/ithaca_new/MapServer/1/query';
+const CINEMATICA = {'Normal':'normale','Normal Fault':'normale','Reverse':'inversa','Reverse Fault':'inversa','Strike Slip':'trascorrente',
+  'Oblique':'obliqua','Oblique Fault':'obliqua','ND':'non determinata','Unknown':'non nota'};
+function cinematicaIt(k){
+  if(!k) return '–';
+  if(CINEMATICA[k]) return CINEMATICA[k];
+  return k.replace(/^Normal Oblique/,'normale obliqua').replace(/^Reverse Oblique/,'inversa obliqua')
+          .replace(/^Oblique Normal/,'obliqua normale').replace(/^Oblique Reverse/,'obliqua inversa')
+          .replace(/^Strike Slip/,'trascorrente').replace(/ DX$/,' destra').replace(/ SX$/,' sinistra');
+}
+function ultimaAttivita(q){
+  if(!q) return '–';
+  const d = q === 'Q43' ? 'storica (< 3.000 anni)' : q.startsWith('Q4') ? 'Olocene' : q.startsWith('Q3') ? 'Pleistocene superiore'
+          : q.startsWith('Q2') ? 'Pleistocene medio' : q.startsWith('Q1') ? 'Pleistocene inferiore' : q === 'Q' ? 'Pleistocene (generico)' : '';
+  return escapeHtml(q) + (d ? ' – ' + d : '');
+}
+let s5Richiesta = 0;
+async function s5Aggiorna(){
+  if(!inqSito) return;
+  const box = document.getElementById('s5Body');
+  const {lat, lon} = inqSito;
+  const R = parseFloat(document.getElementById('s5Raggio').value);
+  const id = ++s5Richiesta;
+  const lay = layerInquadramento(); if(lay) lay.faglie.clearLayers();
+  const params = new URLSearchParams({geometry:`${lon},${lat}`, geometryType:'esriGeometryPoint', inSR:'4326',
+    distance:String(R*1000), units:'esriSRUnit_Meter', spatialRel:'esriSpatialRelIntersects',
+    outFields:'FaultCode,FaultName,Kinematics,LastActivity,url', returnGeometry:'true', outSR:'4326', f:'json'});
+  box.innerHTML = '<div class="hint">Interrogazione del servizio ISPRA ITHACA…</div>';
+  let j;
+  try{
+    const r = await fetch(ITHACA_URL + '?' + params.toString());
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    j = await r.json();
+    if(j.error) throw new Error(j.error.message || 'errore del servizio');
+  }catch(e){
+    if(id !== s5Richiesta) return;
+    box.innerHTML = `<div class="alert alert-danger">Servizio ISPRA ITHACA non raggiungibile (${escapeHtml(e.message)}). Riprovare più tardi.</div>`;
+    return;
+  }
+  if(id !== s5Richiesta) return;
+  const faglie = (j.features || []).map(f=>{
+    const a = f.attributes || {}; let d = Infinity;
+    (f.geometry?.paths || []).forEach(p=>{ for(let i=1;i<p.length;i++) d = Math.min(d, distPuntoSegmentoKm(lat, lon, p[i-1][1], p[i-1][0], p[i][1], p[i][0])); });
+    return {a, d, paths: f.geometry?.paths || []};
+  }).sort((x,y)=>x.d-y.d);
+  let html = `<div class="hint" style="margin-bottom:8px;">Faglie ITHACA entro ${R} km dal sito (raggio di ricerca non normativo): <b>${faglie.length}</b>.</div>`;
+  if(faglie.length){
+    html += `<div class="scroll-box"><table class="data-table"><thead><tr><th>Faglia</th><th>Cinematica</th><th>Ultima attività</th><th>Distanza (km)</th><th>Scheda ISPRA</th></tr></thead><tbody>` +
+      faglie.map(f=>`<tr><td>${escapeHtml(f.a.FaultName)} <span class="hint">(${escapeHtml(f.a.FaultCode)})</span></td><td>${escapeHtml(cinematicaIt(f.a.Kinematics))}</td><td>${ultimaAttivita(f.a.LastActivity)}</td><td>${num1(f.d,1)}</td><td>${f.a.url ? `<a href="${escapeHtml(f.a.url)}" target="_blank" rel="noopener">apri</a>` : '–'}</td></tr>`).join('') +
+      `</tbody></table></div>`;
+    if(lay) faglie.forEach(f=>f.paths.forEach(p=>{
+      L.polyline(p.map(q=>[q[1], q[0]]), {color:'#b5501a', weight:2.5}).bindTooltip(escapeHtml(f.a.FaultName)).addTo(lay.faglie);
+    }));
+  }
+  html += `<div class="disclaimer"><b>Avvertenze ISPRA.</b> ITHACA è in continuo aggiornamento, non può considerarsi completo o definitivo e non ha copertura omogenea sul territorio nazionale; ogni faglia va usata a una scala non superiore alla propria scala di rilevamento (vedere la scheda). Nessuna fascia di rispetto è tracciata da questa app.<br>
+    <b>Gestione del territorio.</b> Le zone di attenzione, suscettibilità e rispetto (ZA<sub>FAC</sub>, ZS<sub>FAC</sub>, ZR<sub>FAC</sub>) sono definite negli studi di microzonazione sismica secondo le <i>Linee guida per la gestione del territorio in aree interessate da Faglie Attive e Capaci (FAC)</i>, Commissione tecnica per la microzonazione sismica, v1.0, 2015: verificare gli studi MS del comune.<br>
+    Fonte: ITHACA Working Group (2019). ITHACA (ITaly HAzard from CApable faulting), A database of active capable faults of the Italian territory. Version December 2019. ISPRA – Servizio Geologico d'Italia, CC BY 4.0. Interrogazione del ${new Date().toLocaleDateString('it-IT')}.</div>`;
+  box.innerHTML = html;
+}
+
+document.getElementById('s3Btn').addEventListener('click', s3Aggiorna);
+document.getElementById('s5Btn').addEventListener('click', s5Aggiorna);
+document.getElementById('s5Raggio').addEventListener('change', s5Aggiorna);
+document.getElementById('s4bRaggio').addEventListener('change', s4bRender);
+
+/* ======================================================================
    9. EVENTI
 ====================================================================== */
 document.getElementById('btnCalc').addEventListener('click', runCalculation);
 document.getElementById('lsSelect').addEventListener('change', ()=>{
   renderSelectedLS();
-  refreshDisaggregation();
+  renderDisaggregation();
 });
 document.getElementById('spectrumMode').addEventListener('change', renderSelectedLS);
 document.getElementById('designMode').addEventListener('change', renderDesignPanel);
@@ -1855,7 +2100,6 @@ document.getElementById('btnPrint').addEventListener('click', ()=>window.print()
 window.addEventListener('beforeprint', ()=>{
   if(spectrumChart) spectrumChart.resize();
   if(designChart) designChart.resize();
-  if(disaggChart) disaggChart.resize();
 });
 
 // calcolo iniziale alla apertura pagina: prima attende il caricamento della griglia

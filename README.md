@@ -6,7 +6,7 @@ Repository: [`fabio-duronio/GeoHub-SismaSite`](https://github.com/fabio-duronio/
 
 Autore: **Fabio Duronio**, geologo.
 
-> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e i coefficienti sismici `k_h`, `k_v`. **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
+> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici, i coefficienti sismici `k_h`, `k_v` e un inquadramento sismico del sito (classificazione, sismicità strumentale e storica, faglie capaci). **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
 
 ---
 
@@ -18,9 +18,14 @@ Autore: **Fabio Duronio**, geologo.
 - **Coefficienti di amplificazione** `S_S`, `C_C`, `S_T` e periodi `T_B`, `T_C`, `T_D` (NTC §3.2.3.2.1, Tabb. 3.2.IV e 3.2.V).
 - **Spettri di risposta elastici** orizzontale `S_e(T)` e verticale `S_ve(T)`, con effetto dello smorzamento `η`.
 - **Spettri di risposta di progetto** orizzontale `S_d(T)` e verticale `S_dv(T)` secondo §3.2.3.4 (SLO: q = 1) e §3.2.3.5 (SLD/SLV/SLC: sostituzione `η → 1/q`), con fattore di comportamento `q` impostabile e applicazione del minimo `S_d ≥ 0,2·a_g`.
-- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica di pendii e opere di sostegno (NTC §7.11.3.5.2, Tab. 7.11.I).
-- **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2.
-- **Scenario di disaggregazione illustrativo** (M_w, R, ε e matrice M_w–R) — *non è un dato INGV*, vedi oltre.
+- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-Versanti.
+- **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2 (passerà all'app GeoHub-Liquefazione).
+- **Disaggregazione**: campi per inserire a mano M_w, R, ε dal report ufficiale INGV-DPC, con la fonte (dalla v1.5.0 nessuna stima automatica).
+- **Inquadramento sismico del sito** (dalla v1.5.0):
+  - **comune e classificazione sismica**: comune individuato dai confini ISTAT 2026, zona dall'elenco DPC (maggio 2025) così come pubblicata, sottozone comprese; *solo fini programmatori e amministrativi*;
+  - **eventi strumentali nel raggio** dal servizio FDSN dell'INGV, in tempo reale (predefiniti: 30 km, M ≥ 2,5, dal 1985), con il tipo di magnitudo di ogni evento;
+  - **storia sismica della località** (DBMI15 v4.0) e **terremoti storici con epicentro nel raggio** (CPTI15 v4.0);
+  - **faglie attive e capaci** dal catalogo ISPRA ITHACA, in tempo reale, entro un raggio di ricerca non normativo (predefinito 10 km), senza fasce di rispetto, con rimando alle Linee guida FAC.
 - **Report stampabile** con intestazione di tracciabilità: sito/commessa, data, versione, coordinate, fonte dei parametri e **ID e distanza dei nodi del reticolo utilizzati**.
 
 ## Prerequisiti
@@ -112,7 +117,10 @@ Cosa l'applicazione **non** fa, e che resta a carico del professionista:
 - **Non esegue analisi non lineari** né analisi con storie temporali; **non esegue analisi di risposta sismica locale** né amplificazioni 2D/3D: le amplificazioni sono quelle convenzionali `S_S`·`S_T` delle NTC.
 - **Non verifica la stabilità dei pendii**: fornisce i coefficienti `k_h`, `k_v` da usare in un'analisi pseudostatica o alla Newmark.
 - **Liquefazione**: applica **solo** i criteri di esclusione 1 (`a_max` < 0,1 g) e 2 (falda > 15 m) del §7.11.3.4.2. I criteri 3 ((N₁)₆₀ > 30, q_c1N > 180) e 4 (granulometria, Fig. 7.11.1) richiedono indagini dirette e **non** sono verificati. Il coefficiente di sicurezza `F_S` non è calcolato.
-- **Disaggregazione**: lo scenario M_w–R–ε e la matrice sono **illustrativi**, generati da un modello semplificato a partire da `a_g` (o inseriti a mano). **Non sono la disaggregazione ufficiale INGV** (progetto DPC-INGV S1 / MPS04): per quella va consultato il servizio INGV per il nodo e il `T_R` di interesse.
+- **Disaggregazione**: l'app **non la calcola**; i valori M_w, R, ε vanno letti dal report ufficiale INGV-DPC (progetto S1 / MPS04) per il nodo e il `T_R` di interesse e inseriti a mano con la fonte.
+- **Classificazione sismica**: ha solo valore programmatorio e amministrativo e non entra nel calcolo. Il comune è individuato con i confini ISTAT generalizzati (scala non certificabile uniformemente): entro 200 m dal confine l'app chiede conferma.
+- **Eventi strumentali, faglie capaci**: dati interrogati in tempo reale dai servizi INGV e ISPRA; se un servizio non risponde la sezione lo segnala. Le avvertenze delle fonti (completezza del catalogo, carattere non definitivo di ITHACA) sono riportate nell'app.
+- **Storia sismica**: l'assenza di un terremoto nella storia di una località non significa che non sia stato risentito.
 - **Copertura geografica**: il reticolo copre il territorio nazionale (maglia ≤ 10 km) **esclusi** Sardegna e isole minori, gestite dalla Tabella 2. Per punti esterni alla copertura (estero, mare aperto, isole non riconosciute) l'app **segnala** che i valori sono estrapolati e non utilizzabili a fini normativi; l'attribuzione di un punto a un'isola è comunque una semplificazione geografica da verificare a cura dell'utente.
 - **Datum**: le coordinate del reticolo sono in **ED50**, mentre i campi di input sono etichettati WGS84. Lo scarto ED50–WGS84 in Italia è di 1–3 arcosecondi (≈ 50–100 m): l'effetto sui parametri è trascurabile (< 0,5 %), ma se serve rigore geodetico convertire le coordinate con `pyproj` prima dell'inserimento.
 
@@ -125,6 +133,11 @@ index.html          applicazione completa (HTML + CSS + JS vanilla)
 grid-data.json      reticolo di riferimento in forma colonnare (10.751 nodi × 9 TR)
 convert_grid.py     rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
 verifica_numeri.py  verifica automatica dei valori di riferimento (opzionale)
+classificazione-data.json  classificazione sismica dei comuni (DPC, maggio 2025)
+comuni-data.json    confini comunali ISTAT 2026 (generalizzati, semplificati)
+storica-data.json   CPTI15 v4.0 + DBMI15 v4.0 (sismicità storica)
+convert_classificazione.py, convert_comuni.py, convert_storica.py  rigenerano i file dati dalle fonti ufficiali
+verifica_dati.py    controlli sui file dati (Abruzzo = Allegato B Decreto 4/2024; Ortona = 24 eventi INGV)
 README.md
 CHANGELOG.md
 LICENSE
@@ -158,5 +171,7 @@ Copyright © 2026 Fabio Duronio. Distribuito con licenza **GNU AGPL-3.0** con te
 Le versioni fino alla 1.3.1 sono state pubblicate con licenza MIT.
 
  I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
+
+Fonti e licenze dei dati dell'inquadramento sismico (dettagli in [NOTICE](NOTICE)): Dipartimento della Protezione Civile (classificazione, CC BY 4.0); ISTAT (confini comunali, CC BY 4.0); INGV (servizio FDSN, CC BY 4.0; CPTI15 e DBMI15 v4.0, CC BY-SA 4.0 come indicato nei file); ISPRA (ITHACA, CC BY 4.0).
 
 Se usi lo strumento in un lavoro professionale o scientifico, cita: *Duronio F., SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z, https://github.com/fabio-duronio/GeoHub-SismaSite*.
