@@ -50,3 +50,36 @@ I dati di pericolosità sismica (grid-data.json) derivano dagli Open Data del
 Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008)
 e restano soggetti alle condizioni della fonte originale.
 
+-------------------------------------------------------------------------
+DATI DI TERZI (dalla v1.5.0) — non coperti dalla licenza AGPL del codice
+-------------------------------------------------------------------------
+
+classificazione-data.json — elaborato da: Dipartimento della Protezione
+  Civile - Presidenza del Consiglio dei Ministri, "Classificazione sismica
+  aggiornata a maggio 2025". Licenza CC BY 4.0. Modifiche: conversione in
+  JSON; chiavi allineate ai codici ISTAT 2026 (377 comuni sardi abbinati per
+  nome). https://rischi.protezionecivile.gov.it/it/sismico/attivita/classificazione-sismica/
+
+comuni-data.json — elaborato da: ISTAT, "Confini delle unità amministrative a
+  fini statistici al 1° gennaio 2026" (versione generalizzata). Licenza
+  CC BY 4.0. Modifiche: proiezione in coordinate geografiche WGS84,
+  semplificazione (Douglas-Peucker, 20 m), conversione in JSON.
+  https://www.istat.it/notizia/confini-delle-unita-amministrative-a-fini-statistici-al-1-gennaio-2018-2/
+
+storica-data.json — elaborato da (licenza CC BY-SA 4.0, come indicato nei
+  file sorgente; il file derivato è distribuito con la stessa licenza):
+  Rovida A., Locati M., Camassi R., Lolli B., Gasperini P., Antonucci A.
+  (eds), 2022. Italian Parametric Earthquake Catalogue (CPTI15), version 4.0.
+  INGV. https://doi.org/10.13127/CPTI/CPTI15.4
+  Locati M., Camassi R., Rovida A., Ercolani E., Bernardini F., Castelli V.,
+  Caracciolo C.H., Tertulliani A., Rossi A., Azzaro R., D'Amico S., Conte S.,
+  Rocchetti E., Antonucci A. (2022). Database Macrosismico Italiano (DBMI15),
+  versione 4.0. INGV. https://doi.org/10.13127/DBMI/DBMI15.4
+  Modifiche: selezione delle località italiane con identificativo, formato
+  colonnare JSON.
+
+Servizi interrogati in tempo reale dall'app (nessun dato ridistribuito):
+  INGV, servizio FDSN webservices.ingv.it (CC BY 4.0);
+  ISPRA, ITHACA - ITHACA Working Group (2019), versione dicembre 2019
+  (CC BY 4.0).
+
