@@ -6,7 +6,7 @@ Repository: [`fabio-duronio/geohub-sismasite`](https://github.com/fabio-duronio/
 
 Autore: **Fabio Duronio**, geologo.
 
-> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e di progetto (con `q` scelto dal progettista), i coefficienti sismici `k_h`, `k_v` e un inquadramento sismico del sito (classificazione, sismicità strumentale e storica, faglie capaci). **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
+> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e di progetto (con `q` scelto dal progettista), i coefficienti sismici `k_h`, `k_v` e un inquadramento sismico del sito (classificazione, sismicità strumentale e storica, faglie capaci). **Non** sostituisce la relazione geologica/geotecnica e non esegue analisi di risposta sismica locale. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
 
 ---
 
@@ -113,7 +113,7 @@ python3 verifica_numeri.py          # non regressione
 python3 verifica_indipendente.py    # calcolo indipendente
 ```
 
-Lo script verifica i parametri di pericolosità per 7 località (compresa un'isola), il criterio di selezione dei nodi (vertici della maglia), lo spettro di progetto `S_d`, il comportamento di SLO e SLD (limite `q ≤ 1,5`) e l'assenza del minimo di `V_R`, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
+`verifica_numeri.py` controlla i parametri di pericolosità per 7 località (compresa un'isola), il criterio di selezione dei nodi (vertici della maglia), lo spettro di progetto `S_d`, il comportamento di SLO e SLD (limite `q ≤ 1,5`) e l'assenza del minimo di `V_R`, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
 
 ## Limiti e perimetro d'uso
 
@@ -136,20 +136,26 @@ I risultati riportano sempre la **fonte** utilizzata (reticolo o Tabella 2) e gl
 ## Struttura del progetto
 
 ```
-index.html          applicazione completa (HTML + CSS + JS vanilla)
-grid-data.json      reticolo di riferimento in forma colonnare (10.751 nodi × 9 TR)
-convert_grid.py     rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
-verifica_numeri.py  verifica automatica dei valori di riferimento (opzionale)
-verifica_indipendente.py  ricalcolo indipendente in Python e confronto con l'app (opzionale)
-verifica_allegato_b.py    confronto di reticolo e isole con il PDF ufficiale dell'Allegato B (opzionale)
-classificazione-data.json  classificazione sismica dei comuni (DPC, maggio 2025)
-comuni-data.json    confini comunali ISTAT 2026 (generalizzati, semplificati)
-storica-data.json   CPTI15 v4.0 + DBMI15 v4.0 (sismicità storica)
-convert_classificazione.py, convert_comuni.py, convert_storica.py  rigenerano i file dati dalle fonti ufficiali
-verifica_dati.py    controlli sui file dati (Abruzzo = Allegato B Decreto 4/2024; Ortona = 24 eventi INGV)
-README.md
-CHANGELOG.md
-LICENSE
+index.html                  applicazione completa (HTML + CSS + JS vanilla)
+assets/                     icone e immagine di anteprima per la condivisione
+
+grid-data.json              reticolo di riferimento in forma colonnare (10.751 nodi × 9 TR)
+classificazione-data.json   classificazione sismica dei comuni (DPC, maggio 2025)
+comuni-data.json            confini comunali ISTAT 2026 (generalizzati, semplificati)
+storica-data.json           CPTI15 v4.0 + DBMI15 v4.0 (sismicità storica)
+
+convert_grid.py             rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
+convert_classificazione.py  rigenera classificazione-data.json
+convert_comuni.py           rigenera comuni-data.json
+convert_storica.py          rigenera storica-data.json
+
+verifica_dati.py            controlli sui file dati (Abruzzo = Allegato B Decreto 4/2024; Ortona = 24 eventi INGV)
+verifica_allegato_b.py      confronto di reticolo e isole con il PDF ufficiale dell'Allegato B (opzionale)
+verifica_indipendente.py    ricalcolo indipendente in Python e confronto con l'app (opzionale)
+verifica_numeri.py          non regressione sui valori di riferimento (opzionale)
+
+.github/ISSUE_TEMPLATE/     modelli per segnalare discrepanze di calcolo e proporre funzioni
+README.md · CHANGELOG.md · LICENSE · NOTICE
 ```
 
 Formato di `grid-data.json` (colonnare, nessuna chiave ripetuta per nodo):
@@ -179,7 +185,7 @@ Copyright © 2026 Fabio Duronio. Distribuito con licenza **GNU AGPL-3.0** con te
 
 Le versioni fino alla 1.3.1 sono state pubblicate con licenza MIT.
 
- I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
+I dati di pericolosità sismica derivano dagli Open Data del Ministero delle Infrastrutture e dei Trasporti (Allegato B al D.M. 14/01/2008): citare la fonte originale in ogni utilizzo.
 
 Fonti e licenze dei dati dell'inquadramento sismico (dettagli in [NOTICE](NOTICE)): Dipartimento della Protezione Civile (classificazione, CC BY 4.0); ISTAT (confini comunali, CC BY 4.0); INGV (servizio FDSN, CC BY 4.0; CPTI15 e DBMI15 v4.0, CC BY-SA 4.0 come indicato nei file); ISPRA (ITHACA, CC BY 4.0).
 

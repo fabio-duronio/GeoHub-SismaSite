@@ -57,7 +57,6 @@ Note:
   di nodi (per ID o per coordinate) contro il servizio ufficiale INGV prima
   di un uso professionale.
 """
-import sys
 import os
 import re
 import json
