@@ -2,6 +2,7 @@
 
 ## Non rilasciato
 
+- Titolo della pagina, titolo per la condivisione (`og:title`) e sottotitolo nell'intestazione: «Parametri sismici del sito» al posto di «Analisi sismica del sito», che poteva far pensare a un'analisi di risposta sismica locale.
 - README: il riquadro «Cos'è e cosa non è» elenca anche gli spettri di progetto, che l'app calcola; tolta la frase che diceva il contrario.
 - Nomi provvisori delle app future: **GeoHub-LiquiSite** (screening di liquefazione) e **GeoHub-SoilSite** (coefficienti k_h, k_v per i pendii), al posto di GeoHub-Liquefazione e GeoHub-Versanti.
 - **Nuovi indirizzi in minuscolo**: repository `github.com/fabio-duronio/geohub-sismasite`, app `fabio-duronio.github.io/geohub-sismasite/`. I vecchi link al repository vengono reindirizzati da GitHub; il vecchio indirizzo di GitHub Pages (`/GeoHub-SismaSite/`) non viene reindirizzato. Aggiornati README, NOTICE e i metadati di condivisione (`og:url`, `og:image`) di `index.html`.
