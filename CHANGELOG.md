@@ -2,6 +2,8 @@
 
 ## Non rilasciato
 
+- README: corretti un errore di sintassi nel riquadro «Cos'è e cosa non è» e uno spazio iniziale; la struttura del progetto elenca tutti i file (anche `assets/`, `NOTICE`, modelli delle segnalazioni), raggruppati per funzione.
+- Codice: rimossi un import inutilizzato in `convert_grid.py` e una funzione mai usata in `convert_classificazione.py`.
 - Titolo della pagina, titolo per la condivisione (`og:title`) e sottotitolo nell'intestazione: «Parametri sismici del sito» al posto di «Analisi sismica del sito», che poteva far pensare a un'analisi di risposta sismica locale.
 - README: il riquadro «Cos'è e cosa non è» elenca anche gli spettri di progetto, che l'app calcola; tolta la frase che diceva il contrario.
 - Nomi provvisori delle app future: **GeoHub-LiquiSite** (screening di liquefazione) e **GeoHub-SoilSite** (coefficienti k_h, k_v per i pendii), al posto di GeoHub-Liquefazione e GeoHub-Versanti.

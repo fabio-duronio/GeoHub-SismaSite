@@ -40,16 +40,6 @@ ATTESI = ['REGIONE', 'PROV_CITTA_METROPOLITANA', 'SIGLA_PROV', 'COMUNE',
 CODICE_VALIDO = re.compile(r'^[1-4][A-Za-z]?(-[1-4][A-Za-z]?)*$')
 
 
-def zone_principali(codice):
-    """Cifre distinte del codice, in ordine: '2A-3A-3B' -> [2, 3]."""
-    out = []
-    for ch in re.findall(r'[1-4]', codice):
-        z = int(ch)
-        if z not in out:
-            out.append(z)
-    return out
-
-
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
