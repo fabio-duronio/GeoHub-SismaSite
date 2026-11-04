@@ -199,7 +199,8 @@
   table.data-table tr:last-child td{border-bottom:none;}
   tr.hl td{background:#eef5fd;}
 
-  .chart-toolbar{display:flex; align-items:center; gap:14px; padding:0 16px 12px;}
+  .chart-toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:0 16px 12px;}
+  .chart-toolbar select, .chart-toolbar input{min-width:0; max-width:100%;}
   .chart-toolbar label{font-size:12.5px; color:var(--slate-600); font-weight:500; margin-right:6px;}
   .chart-wrap{padding:0 16px 16px; height:340px;}
 
@@ -769,8 +770,8 @@ function islandAt(lat, lon){
   return null;
 }
 
-const APP_VERSION = '1.5.0';
-const APP_VERSION_DATE = '2026-11-03';
+const APP_VERSION = '1.5.1';
+const APP_VERSION_DATE = '2026-11-04';
 
 let GRID = null;      // rappresentazione interna unificata: {meta, count, id[], lon[], lat[], ag[t][i], F0[t][i], Tc[t][i]}
 let gridLoadError = null;
@@ -874,6 +875,29 @@ function haversineKm(lat1,lon1,lat2,lon2){
 }
 
 function clamp(v,lo,hi){ return Math.min(hi, Math.max(lo, v)); }
+
+/* Conversione di datum WGS84 -> ED50 (v1.5.1).
+   Le coordinate dei nodi del reticolo (Allegato B, spettri2008.xls) sono in
+   ED50, mentre l'input (mappa, GPS) è WGS84: in Italia lo scarto è di circa
+   100–150 m. Si usa la trasformazione di Molodensky ridotta con i parametri
+   medi ED50 -> WGS84 per l'Europa occidentale (EPSG:1133: dX=-87, dY=-98,
+   dZ=-121 m; ellissoide internazionale 1924 -> WGS84), applicata in senso
+   inverso. L'accuratezza (alcuni metri) è ampiamente sufficiente rispetto
+   alla maglia del reticolo (~5 km). Comuni, eventi, storia sismica e faglie
+   restano in WGS84, il loro datum nativo. */
+function wgs84ToEd50(lat, lon){
+  const a = 6378137.0, f = 1/298.257223563;          // ellissoide sorgente: WGS84
+  const aT = 6378388.0, fT = 1/297.0;                // ellissoide destinazione: Hayford 1924
+  const dX = 87, dY = 98, dZ = 121;                  // WGS84 -> ED50 (inverso di EPSG:1133)
+  const da = aT - a, df = fT - f;
+  const p = lat*Math.PI/180, l = lon*Math.PI/180;
+  const e2 = 2*f - f*f, s = Math.sin(p), c = Math.cos(p);
+  const Rn = a/Math.sqrt(1 - e2*s*s);
+  const Rm = a*(1 - e2)/Math.pow(1 - e2*s*s, 1.5);
+  const dp = (-dX*s*Math.cos(l) - dY*s*Math.sin(l) + dZ*c + (a*df + f*da)*Math.sin(2*p)) / Rm;
+  const dl = (-dX*Math.sin(l) + dY*Math.cos(l)) / (Rn*c);
+  return { lat: lat + dp*180/Math.PI, lon: lon + dl*180/Math.PI };
+}
 
 // Cache delle distanze dal sito corrente a tutti i nodi: evita di ricalcolare
 // l'intero reticolo (10751 nodi) ad ogni chiamata quando, in un solo click su
@@ -989,19 +1013,25 @@ function selectNodes(lat, lon){
   return sel;
 }
 
-// Interpolazione spaziale (Allegato A, eq. [3]) per un dato indice di TR (0..8).
-function spatialInterp(lat, lon, trIndex){
+// Interpolazione secondo l'Allegato A, nello stesso ordine del foglio CSLP
+// Spettri-NTC (v1.5.1):
+//   1) per CIASCUN vertice della maglia, interpolazione log-log in T_R tra i
+//      due periodi tabulati che comprendono TR (eq. [2]);
+//   2) media pesata con l'inverso della distanza dei valori così ottenuti (eq. [3]).
+// Fino alla v1.5.0 l'ordine era invertito (media spaziale ai due T_R, poi
+// interpolazione in T_R): lo scarto misurato su 1.500 siti è < 0,06 %, ma
+// l'allineamento elimina ogni differenza di procedura rispetto al riferimento.
+function spaceTimeInterp(lat, lon, i, TR1, TR2, TRc){
   const dists = getDistances(lat, lon);
   const pick = selectNodes(lat, lon).idx;
 
   let wSum=0, agSum=0, f0Sum=0, tcSum=0;
-  const agRow = GRID.ag[trIndex], f0Row = GRID.F0[trIndex], tcRow = GRID.Tc[trIndex];
-  pick.forEach(i=>{
-    const w = 1/Math.max(dists[i], 0.05);
+  pick.forEach(n=>{
+    const w = 1/Math.max(dists[n], 0.05);
     wSum += w;
-    agSum += w*agRow[i];
-    f0Sum += w*f0Row[i];
-    tcSum += w*tcRow[i];
+    agSum += w*logInterp(GRID.ag[i][n], GRID.ag[i+1][n], TR1, TR2, TRc);
+    f0Sum += w*logInterp(GRID.F0[i][n], GRID.F0[i+1][n], TR1, TR2, TRc);
+    tcSum += w*logInterp(GRID.Tc[i][n], GRID.Tc[i+1][n], TR1, TR2, TRc);
   });
   return { ag: agSum/wSum, F0: f0Sum/wSum, Tc: tcSum/wSum };
 }
@@ -1028,13 +1058,15 @@ function logInterp(v1, v2, TR1, TR2, TR){
 }
 
 // Restituisce {ag, F0, Tc0, fonte, fuoriReticolo, trClampato}
-function hazardAtTR(lat, lon, TR){
+// lat, lon: coordinate nel datum del reticolo (ED50); latW, lonW: coordinate
+// WGS84 dell'input, usate per riconoscere le isole (centri e box sono WGS84).
+function hazardAtTR(lat, lon, TR, latW, lonW){
   const trRef = GRID.meta.trValues;
   const TRc = clamp(TR, trRef[0], trRef[trRef.length-1]);
   const trClampato = (TRc !== TR);
 
   // 1) ISOLE: valori costanti da Allegato B, Tabella 2 (nessun reticolo)
-  const isl = islandAt(lat, lon);
+  const isl = islandAt(latW ?? lat, lonW ?? lon);
   if(isl){
     let i = 0;
     while(i < trRef.length-2 && trRef[i+1] < TRc) i++;
@@ -1053,12 +1085,8 @@ function hazardAtTR(lat, lon, TR){
   while(i < trRef.length-2 && trRef[i+1] < TRc) i++;
   const TR1 = trRef[i], TR2 = trRef[i+1];
 
-  const p1 = spatialInterp(lat, lon, i);
-  const p2 = spatialInterp(lat, lon, i+1);
-
-  const ag  = logInterp(p1.ag,  p2.ag,  TR1, TR2, TRc);
-  const F0  = logInterp(p1.F0,  p2.F0,  TR1, TR2, TRc);
-  const Tc0 = logInterp(p1.Tc,  p2.Tc,  TR1, TR2, TRc);
+  const p = spaceTimeInterp(lat, lon, i, TR1, TR2, TRc);
+  const ag = p.ag, F0 = p.F0, Tc0 = p.Tc;
 
   // 3) Controllo di copertura: se il nodo più vicino dista più di ~15 km
   //    (reticolo a maglia <= 10 km) il punto è fuori dal dominio di validita'
@@ -1067,9 +1095,13 @@ function hazardAtTR(lat, lon, TR){
   for(let k=0;k<dists.length;k++) if(dists[k] < dmin) dmin = dists[k];
 
   return {
-    ag : clamp(ag, 0.005, 0.9),   // clamp solo di sicurezza numerica, non normativo
+    // Clamp di sola sicurezza numerica, NON normativi: i limiti sono scelti fuori
+    // dal campo dei valori ufficiali (reticolo: a_g 0,009–0,625 g; F_0 2,20–3,25;
+    // T*_C 0,095–0,601 s), quindi non alterano mai il dato. Fino alla v1.5.0 il
+    // limite inferiore di T*_C era 0,10 s e modificava 24 nodi a T_R = 30 anni.
+    ag : clamp(ag, 0.005, 0.9),
     F0 : clamp(F0, 2.0, 4.5),
-    Tc0: clamp(Tc0, 0.1, 0.8),
+    Tc0: clamp(Tc0, 0.05, 0.8),
     fonte:'Reticolo di riferimento (10.751 nodi)',
     metodoNodi: selectNodes(lat, lon).metodo,
     fuoriReticolo: dmin > 15,
@@ -1167,12 +1199,21 @@ function qAdottato(codeQ, qInput){
 }
 function qVerticaleAdottato(codeQ){ return codeQ === 'SLO' ? 1.0 : Q_VERTICALE; }
 
+/* Minimo S_d(T) ≥ 0,2·a_g (§3.2.3.5): vale per gli spettri di progetto ridotti
+   con il fattore q. Con q = 1 (sempre per lo SLO, §3.2.3.4) lo spettro di
+   progetto è lo spettro elastico, senza alcun minimo. Fino alla v1.5.0 il
+   minimo era applicato anche allo SLO. In quel caso si usa anche η da
+   smorzamento (r.eta), come nello spettro elastico. */
+function minimoSdAttivo(q){ return q > 1 + 1e-9; }
+
 function seDesignHorizontal(T, r, q){
+  if(!minimoSdAttivo(q)) return seHorizontal(T, r.ag, r.S, r.F0, r.Tb, r.Tc, r.Td, r.eta);
   const eta = 1/q;   // sostituzione η -> 1/q nelle formule [3.2.2]
   return Math.max(seHorizontal(T, r.ag, r.S, r.F0, r.Tb, r.Tc, r.Td, eta), 0.2*r.ag);
 }
 
 function seDesignVertical(T, r, q){
+  if(!minimoSdAttivo(q)) return seVertical(T, r.ag, r.F0, r.eta, r.St);
   const eta = 1/q;   // sostituzione η -> 1/q nelle formule [3.2.8]
   return Math.max(seVertical(T, r.ag, r.F0, eta, r.St), 0.2*r.ag);
 }
@@ -1278,11 +1319,14 @@ function runCalculation(){
 
   const VR = VN*CU;
   const St = computeSt(topoCat);
+  // Pericolosità calcolata sulle coordinate convertite nel datum del reticolo (ED50)
+  const ed = wgs84ToEd50(lat, lon);
+  s2FuoriTerra = false;   // aggiornato in modo asincrono da s2Aggiorna()
 
   const byLS = {};
   LIMIT_STATES.forEach(ls=>{
     const TR = trFromPvr(VR, ls.pvr);
-    const hz = hazardAtTR(lat, lon, TR);
+    const hz = hazardAtTR(ed.lat, ed.lon, TR, lat, lon);
     const agg = hz.ag; // in g
     const Ss = computeSs(soilCat, hz.F0, agg);
     const Cc = computeCc(soilCat, hz.Tc0);
@@ -1321,7 +1365,7 @@ function runCalculation(){
                      distanzaNodo:hz.distanzaNodo, trClampato:hz.trClampato, TRrichiesto:TR};
   });
 
-  lastResults = {lat, lon, VR, VN, CU, soilCat, topoCat, damping, eta, byLS};
+  lastResults = {lat, lon, latEd:ed.lat, lonEd:ed.lon, VR, VN, CU, soilCat, topoCat, damping, eta, byLS};
   renderWarnings();
   updateReportHeader();
   renderHazardTable();
@@ -1347,14 +1391,15 @@ function updateReportHeader(){
   document.getElementById('rhDate').textContent = italianDate(new Date());
   document.getElementById('rhVersion').textContent = APP_VERSION + ' del ' + APP_VERSION_DATE;
   document.getElementById('rhCoords').textContent =
-    lastResults.lat.toFixed(5) + ' N, ' + lastResults.lon.toFixed(5) + ' E';
+    lastResults.lat.toFixed(5) + ' N, ' + lastResults.lon.toFixed(5) + ' E (WGS84)  →  ' +
+    lastResults.latEd.toFixed(5) + ' N, ' + lastResults.lonEd.toFixed(5) + ' E (ED50, datum del reticolo)';
   document.getElementById('rhSource').textContent = r.fonte || 'reticolo di riferimento';
 
   if(r.fonte && r.fonte.indexOf('Tabella 2') >= 0){
     document.getElementById('rhNodes').textContent =
       'nessun nodo: valori costanti da Allegato B, Tabella 2 (isole)';
   } else {
-    const sel = interpNodes(lastResults.lat, lastResults.lon);
+    const sel = interpNodes(lastResults.latEd, lastResults.lonEd);
     document.getElementById('rhNodes').textContent = sel.nodi
       .map(n=>'ID ' + n.id + ' (' + n.lat.toFixed(4) + ' N, ' + n.lon.toFixed(4) + ' E; '
               + n.d.toFixed(2).replace('.', ',') + ' km)')
@@ -1378,6 +1423,9 @@ function renderWarnings(){
   }
   if(r.fonte && r.fonte.indexOf('Tabella 2') >= 0){
     msgs.push(`<b>Valori da Allegato B – Tabella 2 (isole).</b> ${r.fonte}.`);
+  }
+  if(s2FuoriTerra){
+    msgs.push(`<b>Il punto è in mare</b>: non ricade in alcun comune (confini ISTAT) né entro 2 km da un comune. ${r.fonte && r.fonte.indexOf('Tabella 2') >= 0 ? 'I valori costanti della Tabella 2 sono attribuiti per la sola appartenenza all\'area dell\'isola' : 'I valori sono interpolati dal reticolo'} e <b>non rappresentano un sito di progetto</b>: verificare le coordinate.`);
   }
   const betaOut = Object.entries(lastResults.byLS).filter(([k,x])=>x.betaFuoriTabella);
   if(betaOut.length){
@@ -1408,6 +1456,7 @@ function renderHazardTable(){
 }
 
 function renderSelectedLS(){
+  if(!lastResults) return;   // cambio di stato limite prima del primo calcolo
   const code = document.getElementById('lsSelect').value;
   const r = lastResults.byLS[code];
 
@@ -1533,15 +1582,18 @@ function renderDesignTablesOnly(r, q, qv, code, qIn){
   // --- tabella di sintesi ---
   const f = (v)=>v.toFixed(4).replace('.', ',');
   const minD = 0.2*r.ag;
-  const govH = Math.min(...sdH) <= minD + 1e-9;
-  const govV = Math.min(...sdV) <= minD + 1e-9;
+  const govH = minimoSdAttivo(q)  && Math.min(...sdH) <= minD + 1e-9;
+  const govV = minimoSdAttivo(qv) && Math.min(...sdV) <= minD + 1e-9;
+  const minTxt = (!minimoSdAttivo(q) && !minimoSdAttivo(qv))
+    ? 'non applicato (q = 1: spettro elastico, §3.2.3.4)'
+    : f(minD) + ' g ' + ((govH||govV) ? '— <b>il minimo governa</b> parte dello spettro' : '— non attivo');
   document.getElementById('designTableBody').innerHTML = `
     <tr><td>Fattore di comportamento q</td><td>${q.toFixed(1).replace('.', ',')}</td><td>${qv.toFixed(1).replace('.', ',')}</td></tr>
     <tr><td>S<sub>d</sub>(T = 0)</td><td>${f(sdH[0])}</td><td>${f(sdV[0])}</td></tr>
     <tr><td>Plateau S<sub>d</sub>(T<sub>B</sub> ÷ T<sub>C</sub>)</td><td>${f(seDesignHorizontal(r.Tb + 1e-6, r, q))}</td><td>${f(seDesignVertical(0.10, r, qv))}</td></tr>
     <tr><td>S<sub>d</sub>(T = 1,0 s)</td><td>${f(seDesignHorizontal(1.0, r, q))}</td><td>${f(seDesignVertical(1.0, r, qv))}</td></tr>
     <tr><td>S<sub>d</sub>(T = 2,0 s)</td><td>${f(seDesignHorizontal(2.0, r, q))}</td><td>${f(seDesignVertical(2.0, r, qv))}</td></tr>
-    <tr><td>Minimo S<sub>d</sub> ≥ 0,2·a<sub>g</sub></td><td colspan="2">${f(minD)} g ${(govH||govV) ? '— <b>il minimo governa</b> parte dello spettro' : '— non attivo'}</td></tr>
+    <tr><td>Minimo S<sub>d</sub> ≥ 0,2·a<sub>g</sub></td><td colspan="2">${minTxt}</td></tr>
   `;
 
   // --- nota metodologica ---
@@ -1560,7 +1612,10 @@ function renderDesignTablesOnly(r, q, qv, code, qIn){
             (analisi lineare). Nel primo tratto la riduzione non è una semplice divisione per q, perché η compare anche
             nel termine correttivo.`;
   }
-  nota += ` Assunto il minimo <b>S<sub>d</sub>(T) ≥ 0,2·a<sub>g</sub></b> previsto dalla norma. Per la componente
+  nota += (minimoSdAttivo(q) || minimoSdAttivo(qv))
+    ? ` Per gli spettri ridotti con q > 1 è assunto il minimo <b>S<sub>d</sub>(T) ≥ 0,2·a<sub>g</sub></b> (§3.2.3.5).`
+    : ` Con q = 1 lo spettro di progetto coincide con l'elastico: il minimo 0,2·a<sub>g</sub> del §3.2.3.5 non si applica.`;
+  nota += ` Per la componente
             verticale si adotta <b>q = ${qv.toFixed(1).replace('.', ',')}</b> (${code==='SLO' ? 'pari a 1,0 perché per SLO lo spettro di progetto è quello elastico anche per la componente verticale' : 'valore assunto in assenza di analisi specifiche'}).
             La scelta e la giustificazione di q (Tab. 7.3.I e 7.3.II — q = q₀·K<sub>R</sub>, con K<sub>R</sub> = 0,8 per
             costruzioni non regolari in altezza) e l'impiego dello spettro nelle verifiche restano a carico del progettista.`;
@@ -1717,6 +1772,7 @@ function layerInquadramento(){
 }
 
 let inqSito = null;    // {lat, lon} dell'ultimo calcolo
+let s2FuoriTerra = false;   // true se il punto non ricade in alcun comune né entro 2 km (mare)
 function aggiornaInquadramento(lat, lon){
   inqSito = {lat, lon};
   s2Aggiorna(); s3Aggiorna(); s4Aggiorna(); s5Aggiorna();
@@ -1784,6 +1840,10 @@ async function s2Aggiorna(){
       vicini.filter(v=>v.d <= 2).slice(0,3).forEach(v=>candidati.push({c:v.c, d:v.d}));
     }
     s2Stato = {candidati, scelto:0, CC, CL, dentro:!!dentro};
+    // Punto in mare: i parametri (reticolo o Tabella 2 delle isole) non hanno
+    // significato per un sito. L'avviso compare anche nel riquadro principale.
+    s2FuoriTerra = !dentro && candidati.length === 0;
+    if(s2FuoriTerra && lastResults) renderWarnings();
     s2Render();
   }catch(e){
     box.innerHTML = `<div class="alert alert-danger">File dei confini o della classificazione non caricato (${escapeHtml(e.message)}).</div>`;

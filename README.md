@@ -72,17 +72,21 @@ Opzioni utili: `--sheet`, `--header-row`, `--decimals-val` (default 4), `--decim
 ## Metodo di calcolo
 
 1. **Periodo di ritorno** — `T_R = −V_R / ln(1 − P_VR)`, con `V_R = V_N · C_U` (NTC 2018 §2.4.3, **senza valore minimo**: il limite `V_R ≥ 35` anni delle NTC 2008 è stato eliminato; per `V_R < 35` anni l'app mostra una nota) e `P_VR` = 81 %, 63 %, 10 %, 5 % rispettivamente per SLO, SLD, SLV, SLC (NTC Tab. 2.5.I). Il valore è limitato all'intervallo tabulato **30–2475 anni** (Allegato A, nota 1); quando il limite interviene l'app lo segnala.
-2. **Interpolazione in `T_R`** — logaritmica tra i due periodi di ritorno tabulati che racchiudono `T_R` (Allegato A, eq. [2]).
-3. **Interpolazione spaziale** — media pesata con pesi = inversi delle distanze sui **4 vertici della maglia del reticolo che contiene il sito** (Allegato A, eq. [3]). La maglia è individuata dalla numerazione per righe del reticolo (passo di riga ricavato dai dati: 222) con un test punto-in-quadrilatero. Se il sito non ricade in una maglia completa (bordo del reticolo, lacune lungo la costa) si usano i 4 nodi più vicini e l'app lo segnala. Il criterio adottato è riportato nel report insieme agli ID dei nodi.
+2. **Datum** — le coordinate inserite (WGS84) sono convertite in **ED50**, il datum del reticolo, prima di interrogarlo (Molodensky ridotta, parametri EPSG:1133; accuratezza di alcuni metri). Il report riporta entrambe le coppie di coordinate. Comuni, eventi, storia sismica e faglie restano in WGS84, il loro datum nativo.
+3. **Interpolazione** — per ciascuno dei **4 vertici della maglia del reticolo che contiene il sito** il parametro è interpolato in `T_R` con legge logaritmica tra i due periodi tabulati che racchiudono `T_R` (Allegato A, eq. [2]); i quattro valori sono poi combinati con una media pesata con pesi = inversi delle distanze (Allegato A, eq. [3]), nello stesso ordine del foglio CS.LL.PP. Spettri-NTC. La maglia è individuata dalla numerazione per righe del reticolo (passo di riga ricavato dai dati: 222) con un test punto-in-quadrilatero. Se il sito non ricade in una maglia completa (bordo del reticolo, lacune lungo la costa) si usano i 4 nodi più vicini e l'app lo segnala. Il criterio adottato è riportato nel report insieme agli ID dei nodi.
 4. **Isole** — per tutte le isole escluse Sicilia, Ischia, Procida e Capri i parametri sono **costanti** e sono presi dalla **Tabella 2 dell'Allegato B**; per questi siti il reticolo non viene interrogato. Il riconoscimento è geografico e approssimato: Sardegna per area rettangolare, le altre isole per centro + raggio (Elba, Pianosa, Capraia, Gorgona, Giglio, Giannutri, Montecristo, Egadi, Pantelleria, Lampedusa, Linosa, Ponza, Palmarola, Zannone, Ventotene, S. Stefano, Ustica, Tremiti, Alicudi, Filicudi, Panarea, Stromboli, Lipari, Vulcano, Salina). Un punto sulla costa antistante (es. Piombino, Argentario) resta correttamente sul reticolo.
 5. **Amplificazione** — `S_S` e `C_C` (Tab. 3.2.IV), `S_T` (Tab. 3.2.V), `T_B = T_C/3`, `T_C = C_C·T*_C`, `T_D = 4a_g + 1,6`, `η = √(10/(5+ξ))` con limite inferiore 0,55.
 6. **Spettri elastici** — orizzontale: NTC eq. 3.2.6–3.2.8; verticale (§3.2.3.2.2): `F_v = 1,35·F_0·√(a_g/g)`, **`S_S = 1`**, `S_T` da Tab. 3.2.V, `T_B` = 0,05 s, `T_C` = 0,15 s, `T_D` = 1,0 s.
-7. **Spettri di progetto** — per **SLO** coincidono con gli elastici (q = 1,0, §3.2.3.4), per entrambe le componenti. Per **SLD, SLV, SLC** si sostituisce `η` con `1/q` nelle formule [3.2.2] e [3.2.8] (§3.2.3.5): ne risulta, per `0 ≤ T < T_B`, `S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)(1 − T/T_B)]`, mentre per `T ≥ T_B` vale `S_d = S_e/q`. In ogni caso si assume `S_d(T) ≥ 0,2·a_g`. Il fattore `q` impostato dall'utente vale per **SLV e SLC** (Tab. 7.3.I: dissipativo ≥ 1,5 / non dissipativo ≤ 1,5); per **SLD** l'app adotta `min(q; 1,5)` e segnala quando il valore inserito viene limitato; per **SLO** `q = 1`. Per la componente verticale si adotta `q = 1,5` (per SLO `q = 1`).
-8. **Coefficienti sismici** — `a_max = S_S·S_T·a_g`, `k_h = β_s·a_max/g`, `k_v = ±0,5·k_h`, con `β_s` dalla Tab. 7.11.I (0,20 / 0,27 / 0,30 per categoria A e 0,20 / 0,24 / 0,28 per B–C–D–E nelle fasce ≤ 0,1 g / 0,1–0,2 g / 0,2–0,4 g; oltre 0,4 g la tabella non è definita: l'app adotta 0,36 / 0,32 come **scelta conservativa non normativa** e lo segnala con un avviso; il valore va giustificato dal progettista).
+7. **Spettri di progetto** — per **SLO** coincidono con gli elastici (q = 1,0, §3.2.3.4), per entrambe le componenti. Per **SLD, SLV, SLC** si sostituisce `η` con `1/q` nelle formule [3.2.2] e [3.2.8] (§3.2.3.5): ne risulta, per `0 ≤ T < T_B`, `S_d(T) = a_g·S·(1/q)·F_0·[T/T_B + (q/F_0)(1 − T/T_B)]`, mentre per `T ≥ T_B` vale `S_d = S_e/q`. Agli spettri ridotti con `q > 1` si applica il minimo `S_d(T) ≥ 0,2·a_g`; con `q = 1` (sempre per SLO) lo spettro di progetto è l'elastico, senza minimo. Il fattore `q` impostato dall'utente vale per **SLV e SLC** (Tab. 7.3.I: dissipativo ≥ 1,5 / non dissipativo ≤ 1,5); per **SLD** l'app adotta `min(q; 1,5)` e segnala quando il valore inserito viene limitato; per **SLO** `q = 1`. Per la componente verticale si adotta `q = 1,5` (per SLO `q = 1`).
+8. **Coefficienti sismici** — `a_max = S_S·S_T·a_g`, `k_h = β_s·a_max/g`, `k_v = ±0,5·k_h`, con `β_s` dalla Tab. 7.11.I (0,20 / 0,27 / 0,30 per categoria A e 0,20 / 0,24 / 0,28 per B–C–D–E nelle fasce ≤ 0,1 g / 0,1–0,2 g / 0,2–0,4 g; oltre 0,4 g la tabella non è definita: l'app **non calcola** `k_h` e `k_v` e lo segnala con un avviso; il coefficiente va giustificato dal progettista).
 
 ## Validazione
 
-Il dataset è stato confrontato **nodo per nodo** con il file ufficiale MIT: 10.751 nodi, ID e coordinate identici, `a_g`, `F_0`, `T*_C` coincidenti entro l'arrotondamento. I calcoli sono confrontati con un'implementazione indipendente delle formule NTC e con i valori tabellari delle isole.
+La validazione si articola su tre livelli, distinti:
+
+- **Dati**: `grid-data.json` è generato da `convert_grid.py` a partire dal file ufficiale MIT (`spettri2008.xls`), con controllo di cardinalità (10.751 nodi), ID, coordinate, unità di `a_g` (g/10 → g) e valori estremi (`a_g` 0,009–0,625 g; `F_0` 2,20–3,25; `T*_C` 0,095–0,601 s).
+- **Verifica indipendente** (`verifica_indipendente.py`): ricalcola in Python puro, senza riusare codice dell'app, l'intera catena (datum, maglia, interpolazione, `S_S`, `C_C`, `S_T`, `T_B`, `T_C`, `T_D`, `a_max`, `β_s`, `k_h`) su 20 città e 40 siti casuali con categorie di sottosuolo, topografia e `V_R` diversi, e la confronta con l'app nel browser (tolleranza 0,01 %). Controlla inoltre lo spettro SLO, il `T*_C` minimo del reticolo, l'avviso per i punti in mare e l'assenza di overflow su mobile.
+- **Non regressione** (`verifica_numeri.py`): confronta l'app con la tabella di riferimento qui sotto (comprese le isole, Tabella 2).
 
 Valori di riferimento per il collaudo (**SLV**, categoria **B**, topografia **T1**, `V_N` = 50 anni, `C_U` = 1,0; `T_R` = 475 anni):
 
@@ -104,7 +108,8 @@ Per rieseguire la verifica automatica (facoltativa, richiede `playwright`):
 
 ```bash
 pip install playwright && python3 -m playwright install chromium
-python3 verifica_numeri.py
+python3 verifica_numeri.py          # non regressione
+python3 verifica_indipendente.py    # calcolo indipendente
 ```
 
 Lo script verifica i parametri di pericolosità per 7 località (compresa un'isola), il criterio di selezione dei nodi (vertici della maglia), lo spettro di progetto `S_d`, il comportamento di SLO e SLD (limite `q ≤ 1,5`) e l'assenza del minimo di `V_R`, ed esce con codice diverso da zero se qualcosa non torna: è utilizzabile come test di non regressione in CI.
@@ -122,7 +127,8 @@ Cosa l'applicazione **non** fa, e che resta a carico del professionista:
 - **Eventi strumentali, faglie capaci**: dati interrogati in tempo reale dai servizi INGV e ISPRA; se un servizio non risponde la sezione lo segnala. Le avvertenze delle fonti (completezza del catalogo, carattere non definitivo di ITHACA) sono riportate nell'app.
 - **Storia sismica**: l'assenza di un terremoto nella storia di una località non significa che non sia stato risentito.
 - **Copertura geografica**: il reticolo copre il territorio nazionale (maglia ≤ 10 km) **esclusi** Sardegna e isole minori, gestite dalla Tabella 2. Per punti esterni alla copertura (estero, mare aperto, isole non riconosciute) l'app **segnala** che i valori sono estrapolati e non utilizzabili a fini normativi; l'attribuzione di un punto a un'isola è comunque una semplificazione geografica da verificare a cura dell'utente.
-- **Datum**: le coordinate del reticolo sono in **ED50**, mentre i campi di input sono etichettati WGS84. Lo scarto ED50–WGS84 in Italia è di 1–3 arcosecondi (≈ 50–100 m): l'effetto sui parametri è trascurabile (< 0,5 %), ma se serve rigore geodetico convertire le coordinate con `pyproj` prima dell'inserimento.
+- **Datum**: inserire le coordinate in **WGS84** (GPS, mappe web): l'app le converte in ED50, il datum del reticolo. Lo scarto ED50–WGS84 in Italia è di circa 100–150 m; senza conversione l'effetto su `a_g` sarebbe in genere < 0,2 %, con punte del 2–3 % in zone a forte gradiente. Coordinate già in ED50 (ad es. lette da Spettri-NTC) vanno prima riportate in WGS84.
+- **Punti in mare**: se il punto non ricade in alcun comune né entro 2 km da un comune, l'app segnala che i valori (reticolo o Tabella 2) non rappresentano un sito di progetto.
 
 I risultati riportano sempre la **fonte** utilizzata (reticolo o Tabella 2) e gli **ID dei nodi** interpolati, così il calcolo è tracciabile e ripercorribile.
 
@@ -133,6 +139,7 @@ index.html          applicazione completa (HTML + CSS + JS vanilla)
 grid-data.json      reticolo di riferimento in forma colonnare (10.751 nodi × 9 TR)
 convert_grid.py     rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
 verifica_numeri.py  verifica automatica dei valori di riferimento (opzionale)
+verifica_indipendente.py  ricalcolo indipendente in Python e confronto con l'app (opzionale)
 classificazione-data.json  classificazione sismica dei comuni (DPC, maggio 2025)
 comuni-data.json    confini comunali ISTAT 2026 (generalizzati, semplificati)
 storica-data.json   CPTI15 v4.0 + DBMI15 v4.0 (sismicità storica)

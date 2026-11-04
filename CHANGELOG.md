@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.5.1 — 2026-11-04
+
+Revisione a seguito di una verifica esterna del codice. Sui 7 punti di controllo del README i parametri restano invariati entro gli arrotondamenti mostrati.
+
+**Calcolo**
+- **Datum**: le coordinate WGS84 inserite sono convertite in ED50, il datum del reticolo, prima dell'interpolazione (Molodensky ridotta, EPSG:1133). Prima non c'era conversione: scarto di circa 100–150 m, con effetto su `a_g` in genere < 0,2 % e fino al 2–3 % in zone a forte gradiente. Il report mostra le coordinate in entrambi i datum.
+- **Ordine dell'interpolazione** allineato all'Allegato A e a Spettri-NTC: interpolazione in `T_R` su ciascun vertice della maglia, poi media pesata spaziale (prima era l'inverso). Scarto rispetto alla 1.5.0 < 0,06 % su 1.500 siti.
+- **Minimo `S_d ≥ 0,2·a_g`** applicato solo agli spettri ridotti con `q > 1` (§3.2.3.5): con `q = 1`, e quindi sempre per lo SLO, lo spettro di progetto coincide con l'elastico (§3.2.3.4). Prima il minimo era applicato anche allo SLO.
+- **Clamp di sicurezza su `T*_C`** abbassato da 0,10 a 0,05 s: il reticolo ufficiale contiene `T*_C` = 0,095 s a `T_R` = 30 anni in 24 nodi (Alto Adige), che venivano alterati del +5 %.
+
+**Interfaccia**
+- Avviso nel riquadro principale quando il punto è in mare (fuori da ogni comune e oltre 2 km dal più vicino), anche se ricade nell'area di un'isola della Tabella 2.
+- Corretto l'overflow orizzontale su mobile della riga dei filtri (sezione eventi).
+
+**Documentazione e verifiche**
+- README allineato al codice: per `a_g` > 0,4 g `k_h`, `k_v` non sono calcolati (il README citava ancora β_s = 0,36 / 0,32, rimosso nella 1.5.0).
+- Nuovo `verifica_indipendente.py`: ricalcolo dell'intera catena in Python puro su 60 siti e confronto con l'app nel browser; il README distingue ora verifica dei dati, verifica indipendente e non regressione.
+
 ## 1.5.0 — 2026-11-03
 
 Nuova sezione **Inquadramento sismico del sito** e due correzioni. I parametri di pericolosità di base (`a_g`, `F_0`, `T*_C`), gli spettri e i coefficienti di amplificazione non cambiano (verificato su 7 punti di controllo rispetto alla 1.4.1).
