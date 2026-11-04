@@ -6,7 +6,7 @@ Repository: [`fabio-duronio/geohub-sismasite`](https://github.com/fabio-duronio/
 
 Autore: **Fabio Duronio**, geologo.
 
-> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici, i coefficienti sismici `k_h`, `k_v` e un inquadramento sismico del sito (classificazione, sismicità strumentale e storica, faglie capaci). **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale e non calcola gli spettri di progetto `S_d(T)`. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
+> **Cos'è e cosa non è.** È uno strumento di *screening e supporto preliminare* per geologi e ingegneri: restituisce i parametri di pericolosità sismica ufficiale (`a_g`, `F_0`, `T*_C`), i coefficienti di amplificazione, gli spettri elastici e di progetto (con `q` scelto dal progettista), i coefficienti sismici `k_h`, `k_v` e un inquadramento sismico del sito (classificazione, sismicità strumentale e storica, faglie capaci). **Non** sostituisce la relazione geologica/geotecnica, non esegue analisi di risposta sismica locale. Vedi la sezione [Limiti e perimetro d'uso](#limiti-e-perimetro-duso).
 
 ---
 
@@ -18,8 +18,8 @@ Autore: **Fabio Duronio**, geologo.
 - **Coefficienti di amplificazione** `S_S`, `C_C`, `S_T` e periodi `T_B`, `T_C`, `T_D` (NTC §3.2.3.2.1, Tabb. 3.2.IV e 3.2.V).
 - **Spettri di risposta elastici** orizzontale `S_e(T)` e verticale `S_ve(T)`, con effetto dello smorzamento `η`.
 - **Spettri di risposta di progetto** orizzontale `S_d(T)` e verticale `S_dv(T)` secondo §3.2.3.4 (SLO: q = 1) e §3.2.3.5 (SLD/SLV/SLC: sostituzione `η → 1/q`), con fattore di comportamento `q` impostabile e applicazione del minimo `S_d ≥ 0,2·a_g`.
-- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-Versanti.
-- **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2 (passerà all'app GeoHub-Liquefazione).
+- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-SoilSite.
+- **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2 (passerà all'app GeoHub-LiquiSite).
 - **Disaggregazione**: campi per inserire a mano M_w, R, ε dal report ufficiale INGV-DPC, con la fonte (dalla v1.5.0 nessuna stima automatica).
 - **Inquadramento sismico del sito** (dalla v1.5.0):
   - **comune e classificazione sismica**: comune individuato dai confini ISTAT 2026, zona dall'elenco DPC (maggio 2025) così come pubblicata, sottozone comprese; *solo fini programmatori e amministrativi*;
