@@ -85,6 +85,7 @@ Opzioni utili: `--sheet`, `--header-row`, `--decimals-val` (default 4), `--decim
 La validazione si articola su tre livelli, distinti:
 
 - **Dati**: `grid-data.json` è generato da `convert_grid.py` a partire dal file ufficiale MIT (`spettri2008.xls`), con controllo di cardinalità (10.751 nodi), ID, coordinate, unità di `a_g` (g/10 → g) e valori estremi (`a_g` 0,009–0,625 g; `F_0` 2,20–3,25; `T*_C` 0,095–0,601 s).
+- **Testo ufficiale** (`verifica_allegato_b.py`): confronto con le Tabelle 1 e 2 dell'Allegato B lette dal PDF del D.M. 14/01/2008 (G.U. 4/2/2008, S.O. n. 30). Esito: 10.751 nodi su 10.751 con ID identici, scarti entro l'arrotondamento della stampa (≤ 0,005 su `a_g` in g/10, `F_0`, `T*_C`; ≤ 0,0005° sulle coordinate); Tabella 2 delle isole identica nei 5 gruppi.
 - **Verifica indipendente** (`verifica_indipendente.py`): ricalcola in Python puro, senza riusare codice dell'app, l'intera catena (datum, maglia, interpolazione, `S_S`, `C_C`, `S_T`, `T_B`, `T_C`, `T_D`, `a_max`, `β_s`, `k_h`) su 20 città e 40 siti casuali con categorie di sottosuolo, topografia e `V_R` diversi, e la confronta con l'app nel browser (tolleranza 0,01 %). Controlla inoltre lo spettro SLO, il `T*_C` minimo del reticolo, l'avviso per i punti in mare e l'assenza di overflow su mobile.
 - **Non regressione** (`verifica_numeri.py`): confronta l'app con la tabella di riferimento qui sotto (comprese le isole, Tabella 2).
 
@@ -140,6 +141,7 @@ grid-data.json      reticolo di riferimento in forma colonnare (10.751 nodi × 9
 convert_grid.py     rigenera grid-data.json da XLS/XLSX/CSV/TXT ufficiali
 verifica_numeri.py  verifica automatica dei valori di riferimento (opzionale)
 verifica_indipendente.py  ricalcolo indipendente in Python e confronto con l'app (opzionale)
+verifica_allegato_b.py    confronto di reticolo e isole con il PDF ufficiale dell'Allegato B (opzionale)
 classificazione-data.json  classificazione sismica dei comuni (DPC, maggio 2025)
 comuni-data.json    confini comunali ISTAT 2026 (generalizzati, semplificati)
 storica-data.json   CPTI15 v4.0 + DBMI15 v4.0 (sismicità storica)

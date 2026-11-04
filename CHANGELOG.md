@@ -16,6 +16,7 @@ Revisione a seguito di una verifica esterna del codice. Sui 7 punti di controllo
 
 **Documentazione e verifiche**
 - README allineato al codice: per `a_g` > 0,4 g `k_h`, `k_v` non sono calcolati (il README citava ancora β_s = 0,36 / 0,32, rimosso nella 1.5.0).
+- Nuovo `verifica_allegato_b.py`: confronto con il PDF ufficiale del D.M. 14/01/2008. I 10.751 nodi di `grid-data.json` coincidono con la Tabella 1 entro l'arrotondamento della stampa; i 5 gruppi della Tabella 2 (isole) sono identici.
 - Nuovo `verifica_indipendente.py`: ricalcolo dell'intera catena in Python puro su 60 siti e confronto con l'app nel browser; il README distingue ora verifica dei dati, verifica indipendente e non regressione.
 
 ## 1.5.0 — 2026-11-03
