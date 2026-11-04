@@ -1,5 +1,9 @@
 # Changelog
 
+## Non rilasciato
+
+- **Nuovi indirizzi in minuscolo**: repository `github.com/fabio-duronio/geohub-sismasite`, app `fabio-duronio.github.io/geohub-sismasite/`. I vecchi link al repository vengono reindirizzati da GitHub; il vecchio indirizzo di GitHub Pages (`/GeoHub-SismaSite/`) non viene reindirizzato. Aggiornati README, NOTICE e i metadati di condivisione (`og:url`, `og:image`) di `index.html`.
+
 ## 1.5.1 — 2026-11-04
 
 Revisione a seguito di una verifica esterna del codice. Sui 7 punti di controllo del README i parametri restano invariati entro gli arrotondamenti mostrati.

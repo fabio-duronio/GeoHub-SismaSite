@@ -2,7 +2,7 @@
 
 Applicazione web *client-side* per il calcolo dei parametri di pericolosità sismica di base e delle azioni sismiche su un sito, secondo il **D.M. 17/01/2018 (NTC 2018)**, la **Circolare n. 7/2019** e gli **Allegati A e B al D.M. 14/01/2008**.
 
-Repository: [`fabio-duronio/GeoHub-SismaSite`](https://github.com/fabio-duronio/GeoHub-SismaSite) · Demo: <https://fabio-duronio.github.io/GeoHub-SismaSite/>
+Repository: [`fabio-duronio/geohub-sismasite`](https://github.com/fabio-duronio/geohub-sismasite) · Demo: <https://fabio-duronio.github.io/geohub-sismasite/>
 
 Autore: **Fabio Duronio**, geologo.
 
@@ -40,8 +40,8 @@ Per rigenerare `grid-data.json`:
 ## Installazione e avvio
 
 ```bash
-git clone https://github.com/fabio-duronio/GeoHub-SismaSite.git
-cd GeoHub-SismaSite
+git clone https://github.com/fabio-duronio/geohub-sismasite.git
+cd geohub-sismasite
 python3 -m http.server 8000
 ```
 
@@ -183,4 +183,4 @@ Le versioni fino alla 1.3.1 sono state pubblicate con licenza MIT.
 
 Fonti e licenze dei dati dell'inquadramento sismico (dettagli in [NOTICE](NOTICE)): Dipartimento della Protezione Civile (classificazione, CC BY 4.0); ISTAT (confini comunali, CC BY 4.0); INGV (servizio FDSN, CC BY 4.0; CPTI15 e DBMI15 v4.0, CC BY-SA 4.0 come indicato nei file); ISPRA (ITHACA, CC BY 4.0).
 
-Se usi lo strumento in un lavoro professionale o scientifico, cita: *Duronio F., SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z, https://github.com/fabio-duronio/GeoHub-SismaSite*.
+Se usi lo strumento in un lavoro professionale o scientifico, cita: *Duronio F., SismaSite (GeoHub-SismaSite), parametri sismici del sito secondo NTC 2018, versione X.Y.Z, https://github.com/fabio-duronio/geohub-sismasite*.
