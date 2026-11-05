@@ -78,17 +78,6 @@ storica-data.json — elaborato da (licenza CC BY-SA 4.0, come indicato nei
   Modifiche: selezione delle località italiane con identificativo, formato
   colonnare JSON.
 
-Fonti consultate dall'utente tramite collegamento (nessun dato ridistribuito
-né interrogato automaticamente):
-  INGV, modello di pericolosità MPS04-S1, applicazione esse1-gis
-  (https://esse1-gis.mi.ingv.it/). Disaggregazione: Spallarossa D., Barani S.
-  (2007). Disaggregazione della pericolosità sismica in termini di M-R-ε.
-  Progetto DPC-INGV S1, Deliverable D14. http://esse1.mi.ingv.it/d14.html
-  Modello: Stucchi M., Meletti C., Montaldo V., Crowley H., Calvi G.M.,
-  Boschi E. (2011). Seismic Hazard Assessment (2003-2009) for the Italian
-  Building Code. Bull. Seismol. Soc. Am. 101(4), 1885-1911.
-  https://doi.org/10.1785/0120100130
-
 Servizi interrogati in tempo reale dall'app (nessun dato ridistribuito):
   INGV, servizio FDSN webservices.ingv.it (CC BY 4.0);
   ISPRA, ITHACA - ITHACA Working Group (2019), versione dicembre 2019

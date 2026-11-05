@@ -129,7 +129,7 @@
   /* FIX: senza min-width:0 gli <select> con opzioni lunghe forzano la colonna
      a superare la larghezza dello schermo (overflow orizzontale su mobile) */
   .col-input, .col-output{min-width:0;}
-  .field input[type=text], .field input[type=number], .field input[type=date], .field select{min-width:0;}
+  .field input[type=text], .field input[type=number], .field select{min-width:0;}
   .field-row{min-width:0;}
   .panel-header{flex-wrap:wrap; gap:6px;}
   @media (max-width:560px){
@@ -157,7 +157,7 @@
   .field label{
     display:block; font-size:12.5px; color:var(--slate-600); margin-bottom:5px; font-weight:500;
   }
-  .field input[type=text], .field input[type=number], .field input[type=date], .field select{
+  .field input[type=text], .field input[type=number], .field select{
     width:100%;
     padding:8px 10px;
     border:1px solid var(--line);
@@ -222,8 +222,6 @@
   .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
   @media (max-width:980px){.two-col{grid-template-columns:1fr;}}
 
-  .disagg-steps{margin:0 0 14px; padding-left:20px; font-size:13px; line-height:1.7; color:var(--slate-600);}
-  .disagg-steps .btn{margin-left:6px; vertical-align:middle; text-decoration:none; display:inline-block;}
   .disclaimer{
     font-size:12px; color:var(--slate-500); background:var(--slate-100);
     border-radius:var(--radius); padding:10px 12px; margin-top:6px; line-height:1.5;
@@ -499,62 +497,6 @@
           <tbody id="designTableBody"></tbody>
         </table>
         <div class="disclaimer" id="designNote"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Disaggregazione della pericolosità sismica</h2>
-        <div style="font-size:12px; color:var(--slate-600);">Stato limite selezionato: T<sub>R</sub> = <span id="disaggTRLabel">–</span> anni</div>
-      </div>
-      <div class="panel-body">
-        <div class="disclaimer" style="margin:0 0 14px;">
-          <b>SismaSite non calcola la disaggregazione.</b> I valori vanno letti dall'applicazione INGV
-          <b>esse1-gis</b> (modello di pericolosità MPS04-S1, lo stesso da cui deriva il reticolo NTC) e inseriti qui.
-          La disaggregazione INGV è disponibile <b>solo per la PGA su suolo rigido</b>, per le <b>9 probabilità di
-          eccedenza in 50 anni</b> corrispondenti ai T<sub>R</sub> del reticolo, con distanza <b>epicentrale</b>; i valori
-          riportati sono <b>medi</b> (Spallarossa e Barani, 2007, Progetto DPC-INGV S1, Deliverable D14).
-          Non è disponibile per la Sardegna e le isole minori.
-        </div>
-        <ol class="disagg-steps">
-          <li>
-            Apri esse1-gis e centra la mappa sulle coordinate del sito
-            <span style="font-family:var(--font-mono);" id="disaggCoords">–</span>
-            <button class="btn btn-sm no-print" id="disaggCopy" type="button">Copia coordinate</button>
-            <a class="btn btn-sm btn-primary no-print" id="disaggOpen" href="https://esse1-gis.mi.ingv.it/" target="_blank" rel="noopener">Apri esse1-gis (INGV) ↗</a>
-          </li>
-          <li>Seleziona <b>PGA</b> e la probabilità di eccedenza in 50 anni <b id="disaggPoeSugg">–</b>, poi clicca sul punto e apri il grafico di disaggregazione (o il report PDF del nodo).</li>
-          <li>Riporta qui sotto l'ID del nodo e i <b>valori medi</b> di magnitudo, distanza ed epsilon indicati sotto la tabella.</li>
-        </ol>
-        <div class="field-row" style="grid-template-columns:1.3fr 1fr 1fr;">
-          <div class="field">
-            <label for="disaggPoe">Probabilità di eccedenza in 50 anni</label>
-            <select id="disaggPoe"></select>
-          </div>
-          <div class="field">
-            <label for="disaggNodo">ID del nodo esse1</label>
-            <input type="text" id="disaggNodo" inputmode="numeric" placeholder="es. 12261">
-          </div>
-          <div class="field">
-            <label for="disaggData">Data di consultazione</label>
-            <input type="date" id="disaggData">
-          </div>
-        </div>
-        <div class="field-row" style="grid-template-columns:1fr 1fr 1fr;">
-          <div class="field">
-            <label for="magMw">Magnitudo media M</label>
-            <input type="number" id="magMw" step="0.01" placeholder="da esse1-gis">
-          </div>
-          <div class="field">
-            <label for="distR">Distanza media R (km)</label>
-            <input type="number" id="distR" step="0.1" placeholder="da esse1-gis">
-          </div>
-          <div class="field">
-            <label for="magEps">Epsilon media ε</label>
-            <input type="number" id="magEps" step="0.01" placeholder="da esse1-gis">
-          </div>
-        </div>
-        <div class="alert alert-warn" id="disaggNote" style="margin-top:6px;">Valori di disaggregazione non inseriti.</div>
       </div>
     </div>
 
@@ -1390,7 +1332,6 @@ function runCalculation(){
   updateReportHeader();
   renderHazardTable();
   renderSelectedLS();
-  renderDisaggregation();
   renderLiquefaction();
   aggiornaInquadramento(lat, lon);
 }
@@ -1641,107 +1582,6 @@ function renderDesignTablesOnly(r, q, qv, code, qIn){
             costruzioni non regolari in altezza) e l'impiego dello spettro nelle verifiche restano a carico del progettista.`;
   document.getElementById('designNote').innerHTML = nota;
 }
-
-/* ======================================================================
-   7. DISAGGREGAZIONE DELLA PERICOLOSITA' SISMICA (inserimento guidato, v1.6.0)
-   L'app non calcola né scarica la disaggregazione. La fonte è esse1-gis
-   (INGV, modello MPS04-S1; Spallarossa e Barani 2007, Progetto S1, D14):
-   PGA su suolo rigido, valori MEDI di M, R (epicentrale) ed epsilon, per le
-   9 probabilità di eccedenza in 50 anni del reticolo NTC.
-   La disaggregazione non si interpola tra periodi di ritorno (né D14 né le
-   NTC lo prevedono): si suggerisce la probabilità con T_R più vicino a quello
-   dello stato limite (in scala logaritmica) e lo scarto viene dichiarato.
-====================================================================== */
-const ESSE1_POE = [   // [PoE in 50 anni (%), T_R indicato da INGV (anni)]
-  [81, 30], [63, 50], [50, 72], [39, 100], [30, 140], [22, 200], [10, 475], [5, 1000], [2, 2500]
-];
-(function initDisagg(){
-  const sel = document.getElementById('disaggPoe');
-  sel.innerHTML = '<option value="">— seleziona —</option>' +
-    ESSE1_POE.map(([p,t])=>`<option value="${p}">${p} % (T<sub>R</sub> ≈ ${t} anni)</option>`.replace(/<\/?sub>/g,'')).join('');
-  const oggi = new Date();
-  document.getElementById('disaggData').value =
-    oggi.getFullYear() + '-' + String(oggi.getMonth()+1).padStart(2,'0') + '-' + String(oggi.getDate()).padStart(2,'0');
-})();
-
-function poeSuggerita(TR){
-  let best = ESSE1_POE[0], d = Infinity;
-  for(const x of ESSE1_POE){ const dd = Math.abs(Math.log(x[1]/TR)); if(dd < d){ d = dd; best = x; } }
-  return best;
-}
-
-function renderDisaggregation(){
-  const note = document.getElementById('disaggNote');
-  let TRls = NaN, isola = false;
-  if(lastResults){
-    const code = document.getElementById('lsSelect').value;
-    const r = lastResults.byLS[code];
-    TRls = r.TR;
-    isola = !!(r.fonte && r.fonte.indexOf('Tabella 2') >= 0);
-    document.getElementById('disaggTRLabel').textContent = TRls.toFixed(0);
-    document.getElementById('disaggCoords').textContent =
-      lastResults.lat.toFixed(4) + ' N, ' + lastResults.lon.toFixed(4) + ' E';
-    const [p,t] = poeSuggerita(TRls);
-    document.getElementById('disaggPoeSugg').innerHTML =
-      p + ' % (T<sub>R</sub> ≈ ' + t + ' anni, il più vicino a T<sub>R</sub> = ' + TRls.toFixed(0) + ' anni)';
-  }
-  const v = id => parseFloat(document.getElementById(id).value);
-  const Mw = v('magMw'), R = v('distR'), eps = v('magEps');
-  const poe = parseInt(document.getElementById('disaggPoe').value, 10);
-  const nodo = (document.getElementById('disaggNodo').value || '').trim();
-  const data = document.getElementById('disaggData').value;
-
-  if(isola){
-    note.className = 'alert alert-warn';
-    note.innerHTML = 'Il sito ricade in un\'isola della Tabella 2 (Allegato B): la disaggregazione MPS04-S1 di esse1-gis <b>non è disponibile</b> per la Sardegna e le isole minori.';
-    return;
-  }
-  if(isNaN(Mw) && isNaN(R) && isNaN(eps)){
-    note.className = 'alert alert-warn';
-    note.innerHTML = 'Valori di disaggregazione non inseriti.';
-    return;
-  }
-  const f = (x,d) => isNaN(x) ? '–' : x.toFixed(d).replace('.', ',');
-  const mancanti = [];
-  if(isNaN(Mw) || isNaN(R) || isNaN(eps)) mancanti.push('tutti e tre i valori medi');
-  if(isNaN(poe)) mancanti.push('la probabilità di eccedenza');
-  if(!nodo) mancanti.push("l'ID del nodo");
-  if(!data) mancanti.push('la data di consultazione');
-
-  const rec = ESSE1_POE.find(x=>x[0]===poe);
-  let trNota = '';
-  if(rec && isFinite(TRls)){
-    const sugg = poeSuggerita(TRls);
-    if(sugg[0] !== poe){
-      trNota = `<br><b>Attenzione:</b> la probabilità indicata (${poe} %, T<sub>R</sub> ≈ ${rec[1]} anni) non è quella con T<sub>R</sub> più vicino allo stato limite selezionato (T<sub>R</sub> = ${TRls.toFixed(0)} anni → ${sugg[0]} %).`;
-    } else if(Math.abs(Math.log(rec[1]/TRls)) > Math.log(1.06)){
-      trNota = `<br>T<sub>R</sub> dello stato limite = ${TRls.toFixed(0)} anni; disaggregazione INGV riferita a T<sub>R</sub> ≈ ${rec[1]} anni (livello disponibile più vicino; la disaggregazione non si interpola).`;
-    }
-  }
-  const dataIt = data ? data.split('-').reverse().join('/') : '–';
-  const fonte = `INGV, modello MPS04-S1, applicazione esse1-gis: disaggregazione della PGA` +
-    (rec ? ` con probabilità di eccedenza del ${poe} % in 50 anni (T<sub>R</sub> ≈ ${rec[1]} anni)` : '') +
-    (nodo ? `, nodo ID ${escapeHtml(nodo)}` : '') + `, consultata il ${dataIt}. ` +
-    `Metodo: Spallarossa D., Barani S. (2007), Disaggregazione della pericolosità sismica in termini di M-R-ε, Progetto DPC-INGV S1, Deliverable D14.`;
-
-  note.className = (mancanti.length || trNota.indexOf('Attenzione') >= 0) ? 'alert alert-warn' : 'alert alert-ok';
-  note.innerHTML = `Valori medi inseriti: M = <b>${f(Mw,2)}</b>, R = <b>${f(R,1)} km</b> (epicentrale), ε = <b>${f(eps,2)}</b>.<br>` +
-    `Fonte: ${fonte}` + trNota +
-    (mancanti.length ? `<br><b>Da completare:</b> ${mancanti.join(', ')}.` : '');
-}
-['magMw','distR','magEps','disaggNodo','disaggData'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', renderDisaggregation);
-});
-document.getElementById('disaggPoe').addEventListener('change', renderDisaggregation);
-document.getElementById('disaggCopy').addEventListener('click', ()=>{
-  if(!lastResults) return;
-  const txt = lastResults.lat.toFixed(4) + ', ' + lastResults.lon.toFixed(4);
-  const btn = document.getElementById('disaggCopy');
-  const ok = ()=>{ btn.textContent = 'Copiate ✓'; setTimeout(()=>btn.textContent='Copia coordinate', 1500); };
-  try{
-    navigator.clipboard.writeText(txt).then(ok, ()=>{ btn.textContent = txt; });
-  }catch(e){ btn.textContent = txt; }
-});
 
 /* ======================================================================
    8. SCREENING LIQUEFAZIONE E PENDII
@@ -2233,10 +2073,7 @@ document.getElementById('s4bRaggio').addEventListener('change', s4bRender);
    9. EVENTI
 ====================================================================== */
 document.getElementById('btnCalc').addEventListener('click', runCalculation);
-document.getElementById('lsSelect').addEventListener('change', ()=>{
-  renderSelectedLS();
-  renderDisaggregation();
-});
+document.getElementById('lsSelect').addEventListener('change', renderSelectedLS);
 document.getElementById('spectrumMode').addEventListener('change', renderSelectedLS);
 document.getElementById('designMode').addEventListener('change', renderDesignPanel);
 document.getElementById('qFactor').addEventListener('input', renderDesignPanel);
