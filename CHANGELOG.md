@@ -1,6 +1,17 @@
 # Changelog
 
-## Non rilasciato
+## 1.6.0 — 2026-11-05
+
+**Disaggregazione: inserimento guidato da esse1-gis (INGV, MPS04-S1)**
+- Fonte unica dichiarata: applicazione INGV **esse1-gis**, modello MPS04-S1 (lo stesso del reticolo NTC), metodo di Spallarossa e Barani (2007), Progetto DPC-INGV S1, Deliverable D14. Disaggregazione della sola PGA su suolo rigido, valori **medi** di M, R (epicentrale) ed ε, per le 9 probabilità di eccedenza in 50 anni del reticolo.
+- Pulsante che apre esse1-gis, coordinate del sito con copia negli appunti, istruzioni in tre passi.
+- Probabilità di eccedenza **suggerita** per lo stato limite selezionato: livello con `T_R` più vicino in scala logaritmica (la disaggregazione non si interpola tra periodi di ritorno); avviso se la probabilità inserita non è quella suggerita o se il `T_R` differisce da quello dello stato limite.
+- Nuovi campi: probabilità di eccedenza, ID del nodo esse1, data di consultazione. La fonte da citare in relazione è composta automaticamente.
+- Per la Sardegna e le isole minori (Tabella 2) l'app indica che la disaggregazione INGV non è disponibile.
+- Scartati, dopo verifica: i servizi REXEL (valori modali, distanza Joyner-Boore, solo 4 `T_R`) e il BMSE (scenario per la selezione di accelerogrammi), non omogenei con i valori medi di esse1; il BMSE è rinviato all'app per la risposta sismica locale.
+- Rimosso dal foglio di stile di stampa il codice della matrice di disaggregazione eliminata nella 1.5.0.
+
+**Altre modifiche (già su main)**
 
 - README: corretti un errore di sintassi nel riquadro «Cos'è e cosa non è» e uno spazio iniziale; la struttura del progetto elenca tutti i file (anche `assets/`, `NOTICE`, modelli delle segnalazioni), raggruppati per funzione.
 - Codice: rimossi un import inutilizzato in `convert_grid.py` e una funzione mai usata in `convert_classificazione.py`.
