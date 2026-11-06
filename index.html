@@ -176,16 +176,24 @@
   .kpi-mini .kpi{background:#f6f7f9; border-radius:8px; padding:10px 12px;}
 
   /* ===== Schede ===== */
-  .tabs{display:flex; flex-wrap:wrap; gap:4px; padding:0 12px; border-bottom:1px solid var(--line);}
+  .tabs{display:flex; flex-wrap:nowrap; overflow-x:auto; gap:4px; padding:0 12px; border-bottom:1px solid var(--line); scrollbar-width:none;}
+  .tabs button{white-space:nowrap; flex:none;}
   .tabs button{font:inherit; font-size:14.5px; color:var(--slate-600); background:transparent; border:0; border-bottom:3px solid transparent; padding:13px 12px 10px; min-height:48px; cursor:pointer;}
   .tabs button[aria-selected="true"]{color:var(--accent); font-weight:600; border-bottom-color:var(--accent);}
   .tabpanel{padding:18px;}
   .tabpanel[hidden]{display:none;}
   .print-title{display:none;}
+  .tabpanel .panel{border:0; border-radius:0; background:transparent;}
+  .tabpanel .panel + .panel, .tabpanel .stack > .panel ~ .panel{border-top:1px solid var(--line); padding-top:16px;}
+  .tabpanel .panel-header{padding:0 0 10px; border-bottom:0;}
+  .tabpanel .panel-body{padding:0;}
 
   table.data-table{width:100%; border-collapse:collapse; font-size:13px;}
-  table.data-table th, table.data-table td{padding:8px 10px; text-align:right; border-bottom:1px solid #eef1f4; white-space:nowrap;}
-  table.data-table th:first-child, table.data-table td:first-child{text-align:left; white-space:normal;}
+  table.data-table th, table.data-table td{padding:8px 10px; text-align:right; border-bottom:1px solid #eef1f4; white-space:normal; overflow-wrap:normal;}
+  table.data-table th{white-space:nowrap;}
+  .scroll-box table.data-table td, .table-scroll table.data-table td{white-space:nowrap;}
+  table.data-table th:first-child, table.data-table td:first-child{text-align:left;}
+  @media (max-width:640px){ table.data-table{font-size:12px;} table.data-table th, table.data-table td{padding:7px 6px;} table.data-table th{white-space:normal;} }
   table.data-table th{color:var(--slate-600); font-weight:500; font-size:12.5px; border-bottom:1px solid var(--line);}
   table.data-table td{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
   table.data-table tr:last-child td{border-bottom:none;}
@@ -584,8 +592,7 @@
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="panel">
+        <div class="panel">
             <div class="panel-header"><h2>Storia sismica della località</h2></div>
             <div class="panel-body" id="s4Body"><div class="hint">In attesa del calcolo…</div></div>
           </div>
@@ -599,7 +606,6 @@
               <div id="s4bBody"><div class="hint">In attesa del calcolo…</div></div>
             </div>
           </div>
-        </div>
 
         <div class="panel">
           <div class="panel-header"><h2>Faglie attive e capaci (ITHACA)</h2></div>

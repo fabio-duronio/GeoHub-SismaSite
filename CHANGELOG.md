@@ -8,6 +8,7 @@ Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cam
 - Mappa in primo piano, grande, accanto al pannello di input (sotto i 1000 px di larghezza la mappa va in cima).
 - Barra dello stato limite con pulsanti SLO, SLD, SLV, SLC e valori principali sempre in vista: `T_R`, `a_g`, `F_0`, `T*_C`, S, `a_max`.
 - Risultati in tre schede: Parametri, Spettri, Inquadramento sismico (navigabili da tastiera). In stampa compaiono tutte, una dopo l'altra.
+- Su telefono e tablet le tabelle restano dentro il proprio riquadro: il testo va a capo tra le parole, le tabelle lunghe scorrono in orizzontale al loro interno; le schede restano su una riga. Nella scheda Inquadramento le sezioni non hanno più un riquadro interno, così hanno la stessa larghezza delle altre schede.
 - Nel pannello del sito: coordinate ED50 e comune con zona sismica, aggiornati a ogni calcolo.
 - Grafica rinnovata (caratteri IBM Plex, colori e spaziature); screening di liquefazione in un riquadro richiudibile.
 
