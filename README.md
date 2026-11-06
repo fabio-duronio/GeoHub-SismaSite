@@ -12,8 +12,8 @@ Autore: **Fabio Duronio**, geologo.
 
 ## Funzionalità
 
-- **Ubicazione del sito** su mappa interattiva (Leaflet) o per coordinate inserite a mano, con basi cartografiche stradale (OpenStreetMap), rilievo (OpenTopoMap) e satellitare (Esri), vertici della maglia del reticolo usati nel calcolo e blocco della mappa contro gli spostamenti involontari.
-- **Carta di pericolosità INGV** (dalla v1.7.0): carta di `a_g` del modello MPS04 dal servizio WMS ufficiale INGV, per le 9 probabilità di eccedenza in 50 anni (i 9 `T_R` del reticolo) e i percentili 16°, 50° e 84°, con legenda ufficiale e opacità regolabile; per impostazione predefinita segue lo stato limite selezionato (livello con `T_R` più vicino). È un **inquadramento visivo**: il calcolo usa sempre il reticolo dell'Allegato B.
+- **Ubicazione del sito** su mappa interattiva (Leaflet) o per coordinate inserite a mano, con basi cartografiche stradale (OpenStreetMap) e satellitare (Esri), vertici della maglia del reticolo usati nel calcolo e blocco della mappa contro gli spostamenti involontari.
+- **Carta di pericolosità INGV** (dalla v1.7.0): carta di `a_g` del modello MPS04 dal servizio WMS ufficiale INGV, per i 9 periodi di ritorno del reticolo (probabilità di eccedenza in 50 anni dall'81 % al 2 %; predefinito `T_R` = 475 anni, cioè 10 % in 50 anni) e i percentili 16°, 50° e 84°, con legenda ufficiale e opacità regolabile; per impostazione predefinita segue lo stato limite selezionato (livello con `T_R` più vicino). È un **inquadramento visivo**: il calcolo usa sempre il reticolo dell'Allegato B.
 - **Parametri di pericolosità sismica di base**: `a_g`, `F_0`, `T*_C` per i quattro stati limite (SLO, SLD, SLV, SLC), interpolati dal **reticolo di riferimento ufficiale a 10.751 nodi** (Allegato B) e, per le isole, dalla **Tabella 2** dello stesso Allegato.
 - **Periodo di ritorno** `T_R` calcolato da `V_R = V_N · C_U` e `P_VR` secondo NTC §2.4.3.
 - **Coefficienti di amplificazione** `S_S`, `C_C`, `S_T` e periodi `T_B`, `T_C`, `T_D` (NTC §3.2.3.2.1, Tabb. 3.2.IV e 3.2.V).

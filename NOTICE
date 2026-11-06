@@ -86,7 +86,7 @@ Carta di pericolosità mostrata in mappa (servizio WMS, nessun dato ridistribuit
 
 Basi cartografiche (tile caricati dai rispettivi server, soggetti ai termini
 d'uso dei fornitori): OpenStreetMap (© OpenStreetMap contributors, ODbL);
-OpenTopoMap (CC BY-SA); Esri World Imagery (© Esri e fornitori).
+Esri World Imagery (© Esri e fornitori).
 
 Servizi interrogati in tempo reale dall'app (nessun dato ridistribuito):
   INGV, servizio FDSN webservices.ingv.it (CC BY 4.0);
