@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.7.0 — 2026-11-06
+
+Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cambiano (verifiche `verifica_numeri.py` e `verifica_indipendente.py` superate).
+
+**Impaginazione**
+- Mappa in primo piano, grande, accanto al pannello di input (sotto i 1000 px di larghezza la mappa va in cima).
+- Barra dello stato limite con pulsanti SLO, SLD, SLV, SLC e valori principali sempre in vista: `T_R`, `a_g`, `F_0`, `T*_C`, S, `a_max`.
+- Risultati in tre schede: Parametri, Spettri, Inquadramento sismico (navigabili da tastiera). In stampa compaiono tutte, una dopo l'altra.
+- Nel pannello del sito: coordinate ED50 e comune con zona sismica, aggiornati a ogni calcolo.
+- Grafica rinnovata (caratteri IBM Plex, colori e spaziature); screening di liquefazione in un riquadro richiudibile.
+
+**Mappa**
+- Carta di `a_g` del modello INGV MPS04 dal servizio WMS ufficiale (Meletti et al., 2006, CC BY 4.0): 9 probabilità di eccedenza in 50 anni e percentili 16°/50°/84°, legenda ufficiale, opacità regolabile. Segue lo stato limite selezionato (livello con `T_R` più vicino), oppure si sceglie a mano. È un inquadramento visivo: il calcolo usa il reticolo.
+- Basi cartografiche a scelta: stradale (OpenStreetMap), rilievo (OpenTopoMap), satellitare (Esri).
+- Vertici della maglia del reticolo usati nell'interpolazione, riportati da ED50 a WGS84, con ID e distanza.
+- Blocco della mappa: rotella disattivata sul computer e trascinamento disattivato sul telefono finché non si tocca il lucchetto, per non spostare la mappa scorrendo la pagina. Scala grafica.
+
+**Pericolosità di base per i 9 periodi di ritorno**
+- Tabella di `a_g`, `F_0`, `T*_C` del sito per i 9 `T_R` del reticolo e spettri elastici su suolo A, T1, come la Fase 1 del foglio Spettri-NTC del CSLP.
+
 ## 1.6.0 — 2026-11-05
 
 **Disaggregazione rimossa da SismaSite**
