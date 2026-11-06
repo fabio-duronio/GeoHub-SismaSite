@@ -12,8 +12,8 @@ Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cam
 - Grafica rinnovata (caratteri IBM Plex, colori e spaziature); screening di liquefazione in un riquadro richiudibile.
 
 **Mappa**
-- Carta di `a_g` del modello INGV MPS04 dal servizio WMS ufficiale (Meletti et al., 2006, CC BY 4.0): 9 probabilità di eccedenza in 50 anni e percentili 16°/50°/84°, legenda ufficiale, opacità regolabile. Segue lo stato limite selezionato (livello con `T_R` più vicino), oppure si sceglie a mano. È un inquadramento visivo: il calcolo usa il reticolo.
-- Basi cartografiche a scelta: stradale (OpenStreetMap), rilievo (OpenTopoMap), satellitare (Esri).
+- Carta di `a_g` del modello INGV MPS04 dal servizio WMS ufficiale (Meletti et al., 2006, CC BY 4.0): 9 periodi di ritorno (predefinito `T_R` = 475 anni, cioè 10 % in 50 anni, il livello della mappa di riferimento nazionale) e percentili 16°/50°/84°, legenda ufficiale, opacità regolabile. Segue lo stato limite selezionato (livello con `T_R` più vicino), oppure si sceglie a mano. È un inquadramento visivo: il calcolo usa il reticolo.
+- Basi cartografiche a scelta: stradale (OpenStreetMap) e satellitare (Esri). La carta di pericolosità resta visibile sopra entrambe.
 - Vertici della maglia del reticolo usati nell'interpolazione, riportati da ED50 a WGS84, con ID e distanza.
 - Blocco della mappa: rotella disattivata sul computer e trascinamento disattivato sul telefono finché non si tocca il lucchetto, per non spostare la mappa scorrendo la pagina. Scala grafica.
 
