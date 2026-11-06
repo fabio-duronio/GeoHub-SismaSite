@@ -139,8 +139,14 @@
   .hz-ctrl input[type=checkbox]{width:15px; height:15px; accent-color:var(--accent);}
   .hz-ctrl .hz-row{margin-top:10px;}
   .hz-ctrl .hz-small{font-size:11px; color:var(--slate-600);}
-  .hz-ctrl .hz-legend{margin-top:10px; border-top:1px solid var(--line); padding-top:8px;}
-  .hz-ctrl .hz-legend img{display:block; max-width:100%; max-height:240px;}
+  .hz-ctrl{overflow-y:auto;}
+  .hz-leg{background:rgba(255,255,255,.97); border-radius:10px; box-shadow:0 2px 10px rgba(17,24,39,.18); max-width:230px; overflow:hidden;}
+  .hz-leg-head{display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; border:0; background:transparent;
+    font:inherit; font-size:11.5px; color:var(--ink); text-align:left; padding:8px 10px; min-height:36px; cursor:pointer;}
+  .hz-leg-ic{font-size:16px; color:var(--slate-500); flex:none;}
+  .hz-leg-body{padding:0 10px 10px; overflow-y:auto;}
+  .hz-leg-body img{display:block; max-width:100%;}
+  .hz-leg.chiusa .hz-leg-body{display:none;}
   .hz-toggle{display:none;}
   @media (max-width:640px){
     .hz-ctrl{width:210px; padding:10px;}
@@ -148,6 +154,7 @@
     .hz-toggle{display:inline-block; border:0; background:var(--accent-soft); color:var(--accent); border-radius:6px; padding:3px 8px; font:inherit; font-size:11px; font-weight:600;}
   }
   .lock-ctrl{width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#fff; border:0; cursor:pointer;}
+  .lock-ctrl span{display:flex; pointer-events:none;}
   .lock-hint{background:rgba(17,24,39,.82); color:#fff; font-size:12px; padding:6px 10px; border-radius:16px; pointer-events:none;}
 
   /* ===== Stato limite ===== */
@@ -227,7 +234,7 @@
   /* ===== Stampa: tutte le schede, una dopo l'altra ===== */
   @media print{
     body{background:#fff; font-size:11.5px;}
-    .no-print, .tabs, .leaflet-control-container .hz-ctrl, .leaflet-control-zoom, .lock-ctrl{display:none !important;}
+    .no-print, .tabs, .leaflet-control-container .hz-ctrl, .leaflet-control-zoom, .lock-ctrl, .leaflet-control-layers{display:none !important;}
     .wrap{padding:0; max-width:100%; gap:12px;}
     .hero{display:block;}
     .side{display:none;}
@@ -707,6 +714,7 @@ function hzAggiorna(){
     }).addTo(map);
   }
   const sel = document.getElementById('hzPoe'); if(sel) sel.value = String(hz.poe);
+  const legBox = document.querySelector('.hz-leg'); if(legBox) legBox.style.display = hz.attivo ? '' : 'none';
   const leg = document.getElementById('hzLegendImg');
   const tr = MPS04_POE.find(x=>x[0]===hz.poe)[1];
   if(leg){ leg.src = hzLegendaUrl(); leg.alt = 'Legenda della carta di a_g, T_R ' + tr + ' anni, percentile ' + hz.perc; }
@@ -732,8 +740,6 @@ function hzInit(){
           <div class="hz-row"><span class="hz-small">Opacità <span id="hzOpLab">65</span> %</span>
             <input type="range" id="hzOp" min="10" max="100" step="5" value="65" aria-label="Opacità della carta"></div>
           <label><input type="checkbox" id="hzNodi" checked> Vertici della maglia (4 nodi)</label>
-          <div class="hz-legend"><div class="hz-small" id="hzLegendLabel" style="margin-bottom:6px;"></div>
-            <img id="hzLegendImg" alt="Legenda della carta di pericolosità" loading="lazy"></div>
         </div>`;
       L.DomEvent.disableClickPropagation(div);
       L.DomEvent.disableScrollPropagation(div);
@@ -741,7 +747,36 @@ function hzInit(){
     }
   });
   new Ctrl().addTo(map);
+
+  // Legenda: riquadro separato in basso a destra, richiudibile, così il pannello
+  // dei livelli non la copre (sul telefono parte chiusa)
+  const Leg = L.Control.extend({
+    options:{position:'bottomright'},
+    onAdd: function(){
+      const div = L.DomUtil.create('div', 'hz-leg');
+      div.innerHTML = `<button type="button" class="hz-leg-head" id="hzLegToggle" aria-expanded="true">
+          <span id="hzLegendLabel"></span><span class="hz-leg-ic" aria-hidden="true">−</span></button>
+        <div class="hz-leg-body"><img id="hzLegendImg" alt="Legenda della carta di pericolosità" loading="lazy"></div>`;
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+      return div;
+    }
+  });
+  new Leg().addTo(map);
   const $ = id=>document.getElementById(id);
+  function legApri(aperta){
+    const c = document.querySelector('.hz-leg'); c.classList.toggle('chiusa', !aperta);
+    $('hzLegToggle').setAttribute('aria-expanded', String(aperta));
+    c.querySelector('.hz-leg-ic').textContent = aperta ? '−' : '+';
+  }
+  L.DomEvent.on($('hzLegToggle'), 'click', e=>{ L.DomEvent.stop(e); legApri(document.querySelector('.hz-leg').classList.contains('chiusa')); });
+  // altezze massime legate all'altezza della mappa: nulla esce dal riquadro
+  function adattaControlli(){
+    const h = map.getSize().y;
+    document.querySelector('.hz-ctrl').style.maxHeight = Math.max(120, h - 24) + 'px';
+    document.querySelector('.hz-leg-body').style.maxHeight = Math.max(80, h - 200) + 'px';
+  }
+  map.on('resize', adattaControlli); adattaControlli();
   $('hzOn').addEventListener('change', e=>{ hz.attivo = e.target.checked; hzAggiorna(); });
   $('hzPoe').addEventListener('change', e=>{ hz.poe = parseInt(e.target.value,10); hz.segui = false; $('hzSegui').checked = false; hzAggiorna(); });
   $('hzSegui').addEventListener('change', e=>{ hz.segui = e.target.checked; if(hz.segui) hzSeguiSL(); });
@@ -756,7 +791,18 @@ function hzInit(){
   if(window.matchMedia && window.matchMedia('(max-width:640px)').matches){
     const c = document.querySelector('.hz-ctrl'); c.classList.add('hz-collapsed');
     $('hzToggle').textContent = 'Apri'; $('hzToggle').setAttribute('aria-expanded','false');
+    legApri(false);
   }
+  // sul telefono: aprendo il pannello dei livelli si chiude la legenda, e viceversa
+  $('hzToggle').addEventListener('click', ()=>{
+    if(window.matchMedia('(max-width:640px)').matches && !document.querySelector('.hz-ctrl').classList.contains('hz-collapsed')) legApri(false);
+  });
+  $('hzLegToggle').addEventListener('click', ()=>{
+    if(window.matchMedia('(max-width:640px)').matches && !document.querySelector('.hz-leg').classList.contains('chiusa')){
+      const c = document.querySelector('.hz-ctrl'); c.classList.add('hz-collapsed');
+      $('hzToggle').textContent = 'Apri'; $('hzToggle').setAttribute('aria-expanded','false');
+    }
+  });
   hzAggiorna();
 }
 // PoE della carta = livello con T_R più vicino a quello dello stato limite selezionato
@@ -806,7 +852,8 @@ function lockInit(){
       map.scrollWheelZoom.disable();
     }
     const b = document.getElementById('lockBtn');
-    if(b){ b.innerHTML = mappaSbloccata ? ICON_UNLOCK : ICON_LOCK;
+    if(b){ b.querySelector('.ic-lock').style.display = mappaSbloccata ? 'none' : '';
+      b.querySelector('.ic-unlock').style.display = mappaSbloccata ? '' : 'none';
       b.setAttribute('aria-label', mappaSbloccata ? 'Blocca la mappa' : 'Sblocca la mappa (spostamento e zoom con rotella o dita)');
       b.title = b.getAttribute('aria-label'); }
     if(hint) hint.textContent = mappaSbloccata ? 'Mappa sbloccata' :
@@ -814,9 +861,11 @@ function lockInit(){
   }
   const Ctrl = L.Control.extend({ options:{position:'topleft'}, onAdd: function(){
     const d = L.DomUtil.create('div', 'leaflet-bar');
-    d.innerHTML = '<button type="button" class="lock-ctrl" id="lockBtn"></button>';
+    d.innerHTML = '<button type="button" class="lock-ctrl" id="lockBtn"><span class="ic-lock">' + ICON_LOCK +
+                  '</span><span class="ic-unlock" style="display:none">' + ICON_UNLOCK + '</span></button>';
     L.DomEvent.disableClickPropagation(d);
-    d.querySelector('button').addEventListener('click', ()=>{ mappaSbloccata = !mappaSbloccata; applica(); });
+    // il tocco sul lucchetto non deve mai arrivare alla mappa (sposterebbe il sito)
+    L.DomEvent.on(d.querySelector('button'), 'click', e=>{ L.DomEvent.stop(e); mappaSbloccata = !mappaSbloccata; applica(); });
     return d; } });
   new Ctrl().addTo(map);
   applica();
