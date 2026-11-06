@@ -19,6 +19,9 @@ Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cam
 - Legenda della carta in un riquadro proprio in basso a destra, richiudibile (sul telefono parte chiusa e si alterna al pannello dei livelli). La legenda occupa solo lo spazio libero sotto il pannello dei livelli e scorre al suo interno: i due riquadri non si sovrappongono. Il pannello dei livelli si può ridurre su ogni schermo.
 - Blocco della mappa: rotella disattivata sul computer e trascinamento disattivato sul telefono finché non si tocca il lucchetto, per non spostare la mappa scorrendo la pagina. Scala grafica.
 
+**Anteprima del link**
+- Immagine di anteprima (`assets/og-image.png`) aggiornata con il nuovo indirizzo in minuscolo `fabio-duronio.github.io/geohub-sismasite` (il vecchio indirizzo non viene reindirizzato).
+
 **App future**
 - I testi dell'app non citano più i nomi provvisori delle future app GeoHub, ancora in progetto: k_h, k_v e lo screening di liquefazione sono indicati come destinati a future app dedicate.
 
