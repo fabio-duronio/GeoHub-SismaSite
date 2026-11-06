@@ -146,13 +146,10 @@
   .hz-leg-ic{font-size:16px; color:var(--slate-500); flex:none;}
   .hz-leg-body{padding:0 10px 10px; overflow-y:auto;}
   .hz-leg-body img{display:block; max-width:100%;}
-  .hz-leg.chiusa .hz-leg-body{display:none;}
-  .hz-toggle{display:none;}
-  @media (max-width:640px){
-    .hz-ctrl{width:210px; padding:10px;}
-    .hz-ctrl.hz-collapsed .hz-body{display:none;}
-    .hz-toggle{display:inline-block; border:0; background:var(--accent-soft); color:var(--accent); border-radius:6px; padding:3px 8px; font:inherit; font-size:11px; font-weight:600;}
-  }
+  .hz-leg.chiusa .hz-leg-body, .hz-leg.stretta .hz-leg-body{display:none;}
+  .hz-ctrl.hz-collapsed .hz-body{display:none;}
+  .hz-toggle{display:inline-block; border:0; background:var(--accent-soft); color:var(--accent); border-radius:6px; padding:3px 8px; font:inherit; font-size:11px; font-weight:600; cursor:pointer;}
+  @media (max-width:640px){ .hz-ctrl{width:210px; padding:10px;} }
   .lock-ctrl{width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#fff; border:0; cursor:pointer;}
   .lock-ctrl span{display:flex; pointer-events:none;}
   .lock-hint{background:rgba(17,24,39,.82); color:#fff; font-size:12px; padding:6px 10px; border-radius:16px; pointer-events:none;}
@@ -775,14 +772,27 @@ function hzInit(){
     $('hzLegToggle').setAttribute('aria-expanded', String(aperta));
     c.querySelector('.hz-leg-ic').textContent = aperta ? '−' : '+';
   }
-  L.DomEvent.on($('hzLegToggle'), 'click', e=>{ L.DomEvent.stop(e); legApri(document.querySelector('.hz-leg').classList.contains('chiusa')); });
+  L.DomEvent.on($('hzLegToggle'), 'click', e=>{ L.DomEvent.stop(e); legApri(document.querySelector('.hz-leg').classList.contains('chiusa')); setTimeout(adattaControlli, 0); });
   // altezze massime legate all'altezza della mappa: nulla esce dal riquadro
+  // La legenda occupa solo lo spazio libero tra il fondo del pannello dei
+  // livelli e il fondo della mappa: i due riquadri non si sovrappongono mai.
   function adattaControlli(){
     const h = map.getSize().y;
-    document.querySelector('.hz-ctrl').style.maxHeight = Math.max(120, h - 24) + 'px';
-    document.querySelector('.hz-leg-body').style.maxHeight = Math.max(80, h - 200) + 'px';
+    const ctrl = document.querySelector('.hz-ctrl');
+    ctrl.style.maxHeight = Math.max(120, h - 24) + 'px';
+    const mapR = document.getElementById('map').getBoundingClientRect();
+    const ctrlR = ctrl.getBoundingClientRect();
+    const head = document.querySelector('.hz-leg-head').getBoundingClientRect().height || 36;
+    const attr = document.querySelector('.leaflet-control-attribution');
+    const fondo = mapR.bottom - (attr ? attr.getBoundingClientRect().height : 0) - 10;
+    const libero = fondo - (ctrlR.bottom + 10) - head - 10;
+    document.querySelector('.hz-leg-body').style.maxHeight = Math.max(0, libero) + 'px';
+    document.querySelector('.hz-leg').classList.toggle('stretta', libero < 60);
   }
-  map.on('resize', adattaControlli); adattaControlli();
+  map.on('resize', adattaControlli);
+  window.addEventListener('resize', adattaControlli);
+  setTimeout(adattaControlli, 0);
+  window.adattaControlli = adattaControlli;
   $('hzOn').addEventListener('change', e=>{ hz.attivo = e.target.checked; hzAggiorna(); });
   $('hzPoe').addEventListener('change', e=>{ hz.poe = parseInt(e.target.value,10); hz.segui = false; $('hzSegui').checked = false; hzAggiorna(); });
   $('hzSegui').addEventListener('change', e=>{ hz.segui = e.target.checked; if(hz.segui) hzSeguiSL(); });
@@ -793,6 +803,7 @@ function hzInit(){
   $('hzToggle').addEventListener('click', e=>{
     const c = e.target.closest('.hz-ctrl'); const chiuso = c.classList.toggle('hz-collapsed');
     e.target.textContent = chiuso ? 'Apri' : 'Riduci'; e.target.setAttribute('aria-expanded', String(!chiuso));
+    setTimeout(()=>{ if(window.adattaControlli) window.adattaControlli(); }, 0);
   });
   if(window.matchMedia && window.matchMedia('(max-width:640px)').matches){
     const c = document.querySelector('.hz-ctrl'); c.classList.add('hz-collapsed');
