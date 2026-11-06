@@ -19,6 +19,9 @@ Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cam
 - Legenda della carta in un riquadro proprio in basso a destra, richiudibile (sul telefono parte chiusa e si alterna al pannello dei livelli). La legenda occupa solo lo spazio libero sotto il pannello dei livelli e scorre al suo interno: i due riquadri non si sovrappongono. Il pannello dei livelli si può ridurre su ogni schermo.
 - Blocco della mappa: rotella disattivata sul computer e trascinamento disattivato sul telefono finché non si tocca il lucchetto, per non spostare la mappa scorrendo la pagina. Scala grafica.
 
+**Nomi delle app future**
+- I coefficienti k_h, k_v passeranno a **GeoHub-SlopeSite** (stabilità dei pendii), non più a GeoHub-SoilSite; lo screening di liquefazione resta destinato a **GeoHub-LiquiSite**. Il nome GeoHub-SoilSite è riservato all'app per l'interpretazione delle prove penetrometriche e la definizione dei parametri geotecnici.
+
 **Pericolosità di base per i 9 periodi di ritorno**
 - Tabella di `a_g`, `F_0`, `T*_C` del sito per i 9 `T_R` del reticolo e spettri elastici su suolo A, T1, come la Fase 1 del foglio Spettri-NTC del CSLP.
 

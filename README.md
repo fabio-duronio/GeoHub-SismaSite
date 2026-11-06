@@ -20,7 +20,7 @@ Autore: **Fabio Duronio**, geologo.
 - **Pericolosità di base per i 9 periodi di ritorno** del reticolo (dalla v1.7.0): tabella di `a_g`, `F_0`, `T*_C` e spettri elastici su suolo A, T1, come la Fase 1 del foglio Spettri-NTC del CSLP.
 - **Spettri di risposta elastici** orizzontale `S_e(T)` e verticale `S_ve(T)`, con effetto dello smorzamento `η`.
 - **Spettri di risposta di progetto** orizzontale `S_d(T)` e verticale `S_dv(T)` secondo §3.2.3.4 (SLO: q = 1) e §3.2.3.5 (SLD/SLV/SLC: sostituzione `η → 1/q`), con fattore di comportamento `q` impostabile e applicazione del minimo `S_d ≥ 0,2·a_g`.
-- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-SoilSite.
+- **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-SlopeSite (stabilità dei pendii).
 - **Screening liquefazione** con i criteri di esclusione 1 e 2 del §7.11.3.4.2 (passerà all'app GeoHub-LiquiSite).
 - **Inquadramento sismico del sito** (dalla v1.5.0):
   - **comune e classificazione sismica**: comune individuato dai confini ISTAT 2026, zona dall'elenco DPC (maggio 2025) così come pubblicata, sottozone comprese; *solo fini programmatori e amministrativi*;
