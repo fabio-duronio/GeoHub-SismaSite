@@ -30,7 +30,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -38,531 +38,582 @@
     --navy-900:#0f1e30;
     --navy-800:#152a41;
     --navy-700:#1d3a58;
-    --slate-600:#4c5d72;
-    --slate-500:#6b7d93;
+    --ink:#111827;
+    --slate-600:#4b5563;
+    --slate-500:#5f6b7a;
     --slate-300:#aab8c8;
-    --slate-100:#e7ecf1;
+    --slate-100:#eef1f4;
     --paper:#ffffff;
-    --bg:#f3f5f8;
-    --accent:#2f7dd6;
-    --accent-dark:#1f5fab;
-    --warn:#b5501a;
+    --bg:#f3f5f7;
+    --accent:#1e4e8c;
+    --accent-dark:#163a69;
+    --accent-soft:#eef3fa;
+    --warn:#9a4410;
     --warn-bg:#fdf1e8;
     --danger:#a31f2e;
     --danger-bg:#fbeaec;
-    --ok:#1f7a4d;
+    --ok:#1f6b45;
     --ok-bg:#eaf6ef;
-    --line:#dbe2ea;
-    --radius:3px;
-    --font-ui:'Source Sans 3', Arial, sans-serif;
+    --line:#e3e7ec;
+    --radius:10px;
+    --font-ui:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
     --font-mono:'IBM Plex Mono', 'Courier New', monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{
-    font-family:var(--font-ui);
-    background:var(--bg);
-    color:var(--navy-950);
-    font-size:14.5px;
-    line-height:1.5;
-  }
-  h1,h2,h3{font-family:var(--font-ui); margin:0; font-weight:600; color:var(--navy-950);}
-  a{color:var(--accent-dark);}
+  body{font-family:var(--font-ui); background:var(--bg); color:var(--ink); font-size:14.5px; line-height:1.5;}
+  h1,h2,h3{font-family:var(--font-ui); margin:0; font-weight:600; color:var(--ink);}
+  a{color:var(--accent);} a:hover{color:var(--accent-dark);}
+  .num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
 
-  /* ===== Topbar ===== */
-  .topbar{
-    background:var(--navy-950);
-    color:var(--slate-100);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 22px;
-    height:58px;
-    border-bottom:3px solid var(--accent);
-  }
-  .brand{display:flex; align-items:center; gap:10px;}
-  .brand-logo{width:30px; height:30px; flex:none; border-radius:7px; box-shadow:0 0 0 1px var(--navy-700);}
-  .brand .mark{
-    width:11px;height:11px;background:var(--accent);border-radius:1px;
-    transform:rotate(45deg);
-  }
-  .brand-text{font-size:17px; font-weight:600; letter-spacing:.2px;}
-  .brand-sub{font-size:12px; color:var(--slate-300); font-weight:400;}
-  .topbar-actions{display:flex; gap:10px; align-items:center;}
+  /* ===== Intestazione ===== */
+  .topbar{background:var(--paper); border-bottom:1px solid var(--line);}
+  .topbar-inner{max-width:1480px; margin:0 auto; padding:12px 24px; display:flex; flex-wrap:wrap; align-items:center; gap:10px 24px;}
+  .brand{display:flex; align-items:center; gap:12px; flex:1 1 auto; min-width:0;}
+  .brand-logo{width:36px; height:36px; flex:none; border-radius:9px;}
+  .brand-text{font-size:19px; font-weight:700; letter-spacing:-.01em; display:block; line-height:1.15;}
+  .brand-sub{font-size:12.5px; color:var(--slate-600); display:block;}
+  .topbar-actions{display:flex; gap:16px; align-items:center; font-size:13px;}
+  .topbar-actions .ver{color:var(--slate-600);}
 
-  .btn{
-    font-family:var(--font-ui);
-    border:1px solid var(--line);
-    background:var(--paper);
-    color:var(--navy-900);
-    padding:8px 16px;
-    border-radius:var(--radius);
-    cursor:pointer;
-    font-size:13.5px;
-    font-weight:500;
-    transition:background .12s, border-color .12s;
-  }
+  .btn{font-family:var(--font-ui); border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    padding:9px 16px; border-radius:8px; cursor:pointer; font-size:13.5px; font-weight:500; min-height:40px;
+    transition:background .12s, border-color .12s;}
   .btn:hover{border-color:var(--slate-500);}
-  .btn-primary{
-    background:var(--accent); border-color:var(--accent); color:#fff;
-  }
+  .btn-primary{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600;}
   .btn-primary:hover{background:var(--accent-dark); border-color:var(--accent-dark);}
-  .btn-ghost{
-    background:transparent; border-color:var(--slate-600); color:var(--slate-100);
-  }
-  .btn-ghost:hover{background:var(--navy-800);}
+  .btn-primary:disabled{opacity:.6; cursor:default;}
   .btn-block{width:100%;}
-  .btn-sm{padding:5px 10px; font-size:12.5px;}
+  .btn-sm{padding:5px 12px; font-size:12.5px; min-height:32px;}
 
-  /* ===== Layout ===== */
-  .app{
-    display:grid;
-    grid-template-columns:380px minmax(0,1fr);
-    gap:18px;
-    padding:20px;
-    max-width:1520px;
-    margin:0 auto;
-  }
-  @media (max-width:980px){
-    .app{grid-template-columns:minmax(0,1fr);}
-  }
-  /* FIX: senza min-width:0 gli <select> con opzioni lunghe forzano la colonna
-     a superare la larghezza dello schermo (overflow orizzontale su mobile) */
-  .col-input, .col-output{min-width:0;}
-  .field input[type=text], .field input[type=number], .field select{min-width:0;}
-  .field-row{min-width:0;}
-  .panel-header{flex-wrap:wrap; gap:6px;}
-  @media (max-width:560px){
-    /* FIX: la tabella a 6 colonne eccede la larghezza dello schermo */
-    table.data-table{font-size:11px;}
-    table.data-table th, table.data-table td{padding:6px 4px;}
-    .panel-body{overflow-x:auto;}
-  }
+  /* ===== Impaginazione ===== */
+  .wrap{max-width:1480px; margin:0 auto; padding:20px 24px 8px; display:flex; flex-direction:column; gap:18px;}
+  .hero{display:grid; grid-template-columns:360px minmax(0,1fr); gap:18px; align-items:stretch;}
+  @media (max-width:1000px){ .hero{grid-template-columns:minmax(0,1fr);} .hero .map-card{order:-1;} }
+  .side{display:flex; flex-direction:column; gap:14px; min-width:0;}
 
-  .panel{
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    margin-bottom:18px;
-  }
-  .panel-header{
-    padding:12px 16px;
-    border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .panel-header h2{font-size:14px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-600);}
+  .panel{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); min-width:0;}
+  .panel-header{padding:12px 16px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; justify-content:space-between;}
+  .panel-header h2{font-size:15px; font-weight:600; color:var(--ink);}
   .panel-body{padding:16px;}
+  .panel + .panel{margin-top:0;}
+  .stack{display:flex; flex-direction:column; gap:16px;}
 
-  .field{margin-bottom:13px;}
-  .field label{
-    display:block; font-size:12.5px; color:var(--slate-600); margin-bottom:5px; font-weight:500;
-  }
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-size:12.5px; color:var(--slate-600); margin-bottom:5px; font-weight:500;}
   .field input[type=text], .field input[type=number], .field select{
-    width:100%;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    font-family:var(--font-mono);
-    font-size:13.5px;
-    background:#fbfcfd;
-    color:var(--navy-950);
-  }
-  .field input:focus, .field select:focus{outline:none; border-color:var(--accent);}
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .hint{font-size:11.5px; color:var(--slate-500); margin-top:4px;}
-
-  #map{height:230px; border-radius:var(--radius); border:1px solid var(--line);}
-
+    width:100%; min-width:0; padding:9px 10px; min-height:40px; border:1px solid #cdd3da; border-radius:8px;
+    font-family:var(--font-ui); font-size:14px; background:#fff; color:var(--ink);}
+  .field input[type=number]{font-family:var(--font-mono);}
+  .field input:focus, .field select:focus{outline:2px solid #bcd0ea; outline-offset:0; border-color:var(--accent);}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; min-width:0;}
+  .hint{font-size:12px; color:var(--slate-500); margin-top:4px;}
+  .group-label{font-size:11.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--slate-600); margin:2px 0 10px;}
   .divider{height:1px; background:var(--line); margin:14px 0;}
+  .chips{display:flex; flex-direction:column; gap:6px; font-size:12.5px; margin-top:4px;}
+  .chip{display:flex; justify-content:space-between; gap:10px; padding:7px 10px; background:#f6f7f9; border-radius:8px;}
+  .chip span:first-child{color:var(--slate-600);}
+  .chip .num{text-align:right;}
 
-  /* ===== Results ===== */
-  .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
-  @media (max-width:760px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
-  .kpi{
-    background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--accent);
-    border-radius:var(--radius); padding:12px 14px;
+  details.collapse{border:1px solid var(--line); border-radius:var(--radius); background:var(--paper);}
+  details.collapse > summary{cursor:pointer; padding:12px 16px; font-weight:600; font-size:14px; list-style:none; display:flex; justify-content:space-between; align-items:center; min-height:44px;}
+  details.collapse > summary::-webkit-details-marker{display:none;}
+  details.collapse > summary::after{content:'+'; font-size:18px; color:var(--slate-500);}
+  details.collapse[open] > summary::after{content:'−';}
+  details.collapse > .panel-body{border-top:1px solid var(--line);}
+
+  /* ===== Mappa ===== */
+  .map-card{overflow:hidden; display:flex; flex-direction:column;}
+  #map{flex:1 1 auto; min-height:clamp(420px, 66vh, 720px); background:#cfdde7;}
+  @media (max-width:640px){ #map{min-height:0; height:min(60vh, 460px); flex:none;} .topbar-inner{padding:10px 16px;} .topbar-actions .ver, .topbar-actions a{display:none;} .brand-sub{font-size:11.5px;} .wrap{padding:14px 12px 8px;} }
+  .map-foot{display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 16px; padding:9px 14px; font-size:12px; color:var(--slate-600); border-top:1px solid var(--line);}
+  .leaflet-container{font-family:var(--font-ui);}
+  .hz-ctrl{background:rgba(255,255,255,.97); border-radius:10px; box-shadow:0 2px 10px rgba(17,24,39,.18); padding:12px; width:250px; font-size:12.5px; color:var(--ink);}
+  .hz-ctrl .hz-title{display:flex; align-items:center; justify-content:space-between; gap:8px; font-weight:600; font-size:13px;}
+  .hz-ctrl .hz-sub{font-size:11px; color:var(--slate-600); font-weight:400;}
+  .hz-ctrl label{display:flex; align-items:center; gap:7px; margin-top:8px; cursor:pointer;}
+  .hz-ctrl select{width:100%; margin-top:4px; padding:6px 8px; border:1px solid #cdd3da; border-radius:6px; font:inherit; background:#fff;}
+  .hz-ctrl input[type=range]{width:100%; accent-color:var(--accent);}
+  .hz-ctrl input[type=checkbox]{width:15px; height:15px; accent-color:var(--accent);}
+  .hz-ctrl .hz-row{margin-top:10px;}
+  .hz-ctrl .hz-small{font-size:11px; color:var(--slate-600);}
+  .hz-ctrl .hz-legend{margin-top:10px; border-top:1px solid var(--line); padding-top:8px;}
+  .hz-ctrl .hz-legend img{display:block; max-width:100%; max-height:240px;}
+  .hz-toggle{display:none;}
+  @media (max-width:640px){
+    .hz-ctrl{width:210px; padding:10px;}
+    .hz-ctrl.hz-collapsed .hz-body{display:none;}
+    .hz-toggle{display:inline-block; border:0; background:var(--accent-soft); color:var(--accent); border-radius:6px; padding:3px 8px; font:inherit; font-size:11px; font-weight:600;}
   }
-  .kpi .kpi-label{font-size:11.5px; color:var(--slate-600); text-transform:uppercase; letter-spacing:.3px;}
-  .kpi .kpi-value{font-family:var(--font-mono); font-size:22px; font-weight:600; color:var(--navy-900); margin-top:4px;}
-  .kpi .kpi-unit{font-size:12px; color:var(--slate-500); font-family:var(--font-ui);}
+  .lock-ctrl{width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#fff; border:0; cursor:pointer;}
+  .lock-hint{background:rgba(17,24,39,.82); color:#fff; font-size:12px; padding:6px 10px; border-radius:16px; pointer-events:none;}
+
+  /* ===== Stato limite ===== */
+  .ls-bar{display:flex; flex-wrap:wrap; align-items:center; gap:14px 28px; padding:14px 18px;}
+  .seg{display:inline-flex; background:#eef1f4; border-radius:10px; padding:3px; gap:3px;}
+  .seg button{font:inherit; border:0; background:transparent; color:var(--ink); border-radius:8px; padding:6px 14px; min-height:44px; cursor:pointer; display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;}
+  .seg button b{font-size:14px;}
+  .seg button small{font-size:11px; color:var(--slate-600);}
+  .seg button[aria-pressed="true"]{background:var(--accent); color:#fff;}
+  .seg button[aria-pressed="true"] small{color:#dbe6f5;}
+  .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+  .kpi-row{flex:1 1 560px; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px;}
+  @media (max-width:760px){ .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));} }
+  .kpi .kpi-label{font-size:12px; color:var(--slate-600);}
+  .kpi .kpi-value{font-family:var(--font-mono); font-size:21px; font-weight:500; color:var(--ink); white-space:nowrap;}
+  .kpi .kpi-unit{font-size:12px; color:var(--slate-600); font-family:var(--font-ui);}
+  .kpi-mini{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px;}
+  @media (max-width:760px){ .kpi-mini{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  .kpi-mini .kpi{background:#f6f7f9; border-radius:8px; padding:10px 12px;}
+
+  /* ===== Schede ===== */
+  .tabs{display:flex; flex-wrap:wrap; gap:4px; padding:0 12px; border-bottom:1px solid var(--line);}
+  .tabs button{font:inherit; font-size:14.5px; color:var(--slate-600); background:transparent; border:0; border-bottom:3px solid transparent; padding:13px 12px 10px; min-height:48px; cursor:pointer;}
+  .tabs button[aria-selected="true"]{color:var(--accent); font-weight:600; border-bottom-color:var(--accent);}
+  .tabpanel{padding:18px;}
+  .tabpanel[hidden]{display:none;}
+  .print-title{display:none;}
 
   table.data-table{width:100%; border-collapse:collapse; font-size:13px;}
-  table.data-table th, table.data-table td{
-    padding:8px 10px; text-align:right; border-bottom:1px solid var(--line);
-  }
-  table.data-table th:first-child, table.data-table td:first-child{text-align:left;}
-  table.data-table th{
-    background:var(--slate-100); color:var(--navy-800); font-weight:600; font-size:12px;
-    text-transform:uppercase; letter-spacing:.3px;
-  }
-  table.data-table td{font-family:var(--font-mono);}
+  table.data-table th, table.data-table td{padding:8px 10px; text-align:right; border-bottom:1px solid #eef1f4; white-space:nowrap;}
+  table.data-table th:first-child, table.data-table td:first-child{text-align:left; white-space:normal;}
+  table.data-table th{color:var(--slate-600); font-weight:500; font-size:12.5px; border-bottom:1px solid var(--line);}
+  table.data-table td{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
   table.data-table tr:last-child td{border-bottom:none;}
-  tr.hl td{background:#eef5fd;}
+  tr.hl td{background:var(--accent-soft);}
+  .table-scroll{overflow-x:auto;}
 
-  .chart-toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:0 16px 12px;}
-  .chart-toolbar select, .chart-toolbar input{min-width:0; max-width:100%;}
-  .chart-toolbar label{font-size:12.5px; color:var(--slate-600); font-weight:500; margin-right:6px;}
-  .chart-wrap{padding:0 16px 16px; height:340px;}
+  .chart-toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:0 0 12px;}
+  .chart-toolbar select, .chart-toolbar input{min-width:0; max-width:100%; padding:6px 8px; border:1px solid #cdd3da; border-radius:6px; font:inherit; font-size:13px; background:#fff;}
+  .chart-toolbar label{font-size:12.5px; color:var(--slate-600); font-weight:500;}
+  .chart-wrap{height:340px; position:relative;}
+  .legend-note{display:flex; gap:8px 18px; padding:10px 0 0; font-size:12px; color:var(--slate-600); flex-wrap:wrap;}
+  .legend-swatch{display:inline-block; width:14px; height:3px; margin-right:6px; vertical-align:middle; border-radius:2px;}
+  .grid-2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px;}
+  @media (max-width:1000px){ .grid-2{grid-template-columns:minmax(0,1fr);} }
+  .sub-title{font-size:15px; font-weight:600; margin:0 0 10px;}
+  .sub-title small{font-weight:400; color:var(--slate-600); font-size:13px;}
 
-  .legend-note{display:flex; gap:18px; padding:0 16px 14px; font-size:12px; color:var(--slate-600); flex-wrap:wrap;}
-  .legend-swatch{display:inline-block; width:12px; height:3px; margin-right:6px; vertical-align:middle;}
-
-  .alert{
-    border-radius:var(--radius);
-    padding:12px 14px;
-    font-size:13px;
-    margin-top:12px;
-    border:1px solid transparent;
-  }
+  .alert{border-radius:8px; padding:12px 14px; font-size:13px; margin-top:12px; border:1px solid transparent;}
   .alert-warn{background:var(--warn-bg); border-color:#eecba3; color:var(--warn);}
   .alert-danger{background:var(--danger-bg); border-color:#eabec3; color:var(--danger);}
   .alert-ok{background:var(--ok-bg); border-color:#bfe3cd; color:var(--ok);}
   .alert-title{font-weight:600; margin-bottom:3px; display:block;}
+  #warnBox:empty{display:none;}
 
-  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
-  @media (max-width:980px){.two-col{grid-template-columns:1fr;}}
-
-  .disclaimer{
-    font-size:12px; color:var(--slate-500); background:var(--slate-100);
-    border-radius:var(--radius); padding:10px 12px; margin-top:6px; line-height:1.5;
-  }
-  .disclaimer b{color:var(--navy-800);}
-
+  .disclaimer{font-size:12px; color:var(--slate-600); background:#f6f7f9; border-radius:8px; padding:10px 12px; margin-top:10px; line-height:1.55;}
+  .disclaimer b{color:var(--ink);}
   .checkline{display:flex; align-items:center; gap:8px; margin-bottom:12px;}
-  .checkline input{width:16px; height:16px;}
-  .checkline label{font-size:13px; color:var(--navy-900); font-weight:500;}
-
+  .checkline input{width:16px; height:16px; accent-color:var(--accent);}
+  .checkline label{font-size:13px; color:var(--ink); font-weight:500;}
   .subgrid-hidden{display:none;}
 
-  /* ===== Intestazione del report (schermo e stampa) ===== */
-  .report-header{
-    background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--navy-700);
-    border-radius:var(--radius); padding:12px 16px; margin-bottom:18px;
-  }
+  /* ===== Intestazione del report ===== */
+  .report-header{padding:12px 16px;}
   .report-header .rh-row{display:flex; flex-wrap:wrap; gap:8px 26px; margin-bottom:6px;}
   .report-header .rh-row:last-child{margin-bottom:0;}
-  .report-header .rh-l{
-    display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--slate-500); font-weight:600;
-  }
-  .report-header .rh-v{display:block; font-size:13px; color:var(--navy-900); font-family:var(--font-mono);}
-  .badge-illustrative{
-    display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
-    background:var(--warn-bg); color:var(--warn); border:1px solid #eecba3; border-radius:2px;
-    padding:2px 7px; margin-left:8px; vertical-align:middle;
-  }
-  @media (max-width:560px){ .report-header .rh-row{gap:6px 16px;} }
+  .report-header .rh-l{display:block; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--slate-600); font-weight:600;}
+  .report-header .rh-v{display:block; font-size:13px; color:var(--ink); font-family:var(--font-mono);}
+  .badge-illustrative{display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    background:var(--warn-bg); color:var(--warn); border:1px solid #eecba3; border-radius:4px; padding:2px 7px; margin-left:8px; vertical-align:middle;}
 
-  .section-title{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--slate-600);
-    margin:26px 0 10px; padding-bottom:6px; border-bottom:2px solid var(--line); }
-  .scroll-box{ max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:3px; }
-  .scroll-box .data-table{ margin:0; }
-  .footer-note{
-    text-align:center; color:var(--slate-500); font-size:11.5px; padding:20px 0 40px;
-  }
+  .section-title{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--slate-600); margin:6px 0 10px;}
+  .scroll-box{max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:8px;}
+  .scroll-box .data-table{margin:0;}
+  .footer-note{text-align:center; color:var(--slate-600); font-size:12px; padding:8px 24px 40px; max-width:1100px; margin:0 auto; line-height:1.6;}
 
-  /* ===== Print ===== */
+  /* ===== Stampa: tutte le schede, una dopo l'altra ===== */
   @media print{
     body{background:#fff; font-size:11.5px;}
-    .scroll-box{ max-height:none; overflow:visible; border:0; }
-    .no-print{display:none !important;}
-    .app{display:block; padding:0; max-width:100%;}
-    .panel{border:1px solid #999; break-inside:avoid; margin-bottom:14px; box-shadow:none;}
-    .panel-header{background:#eee !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
-    #map{height:200px;}
-    .kpi-row{grid-template-columns:repeat(4,1fr);}
-    .chart-wrap{height:260px;}
+    .no-print, .tabs, .leaflet-control-container .hz-ctrl, .leaflet-control-zoom, .lock-ctrl{display:none !important;}
+    .wrap{padding:0; max-width:100%; gap:12px;}
+    .hero{display:block;}
+    .side{display:none;}
+    .map-card{break-inside:avoid; margin-bottom:12px;}
+    #map{height:260px;}
+    .tabpanel[hidden]{display:block !important;}
+    .tabpanel{padding:8px 0; break-before:auto;}
+    .print-title{display:block; font-size:14px; font-weight:700; margin:6px 0 8px; padding-bottom:4px; border-bottom:1.5px solid #333;}
+    .panel{border:1px solid #999; break-inside:avoid; box-shadow:none;}
+    .scroll-box{max-height:none; overflow:visible; border:0;}
+    .kpi-row{grid-template-columns:repeat(6,1fr);}
+    .chart-wrap{height:250px;}
+    .grid-2{grid-template-columns:1fr 1fr;}
     a{color:#000; text-decoration:none;}
-    .two-col{grid-template-columns:1fr 1fr;}
-    .kpi{border-left:3px solid #333;}
   }
 </style>
 </head>
 <body>
 
-<div class="topbar no-print">
-  <div class="brand">
-    <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1521"/><path d="M11 47 L11 51 L53 51" fill="none" stroke="#3b5674" stroke-width="2.5" stroke-linecap="round"/><path d="M12 42 L21 18 L33 18 C40 18 44 34 54 38" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="17" y="14" width="8" height="8" fill="#2f7dd6" transform="rotate(45 21 18)"/></svg>
-    <span class="brand-text">SismaSite</span>
-    <span class="brand-sub">Parametri sismici del sito — NTC 2018</span>
+<header class="topbar no-print">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b1521"/><path d="M11 47 L11 51 L53 51" fill="none" stroke="#3b5674" stroke-width="2.5" stroke-linecap="round"/><path d="M12 42 L21 18 L33 18 C40 18 44 34 54 38" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="17" y="14" width="8" height="8" fill="#2f7dd6" transform="rotate(45 21 18)"/></svg>
+      <div>
+        <span class="brand-text">SismaSite</span>
+        <span class="brand-sub">Parametri sismici del sito · NTC 2018 · reticolo INGV</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="#fonti">Fonti e validazione</a>
+      <span class="ver num" id="topVersion">v–</span>
+      <button class="btn btn-primary" id="btnPrint">Stampa / Salva PDF</button>
+    </div>
   </div>
-  <div class="topbar-actions">
-    <button class="btn btn-ghost" id="btnPrint">Stampa / Salva Report PDF</button>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+
+    <!-- ================= INPUT ================= -->
+    <div class="side">
+
+      <div class="panel">
+        <div class="panel-header"><h2>Sito</h2></div>
+        <div class="panel-body">
+          <div class="field-row">
+            <div class="field">
+              <label for="lat">Latitudine (WGS84)</label>
+              <input type="number" id="lat" step="0.0001" value="42.3499">
+            </div>
+            <div class="field">
+              <label for="lon">Longitudine (WGS84)</label>
+              <input type="number" id="lon" step="0.0001" value="13.3995">
+            </div>
+          </div>
+          <div class="hint" style="margin:-4px 0 10px;">Clicca sulla mappa o trascina il segnaposto per scegliere il sito.</div>
+          <div class="chips">
+            <div class="chip"><span>ED50 (datum del reticolo)</span><span class="num" id="edChip">–</span></div>
+            <div class="chip"><span>Comune</span><span id="comuneChip">–</span></div>
+          </div>
+          <div class="field" style="margin:12px 0 0;">
+            <label for="siteName">Nome sito / commessa (facoltativo)</label>
+            <input type="text" id="siteName" placeholder="es. Comune di …, località …, comm. 2026/xx">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h2>Opera e sottosuolo</h2></div>
+        <div class="panel-body">
+          <div class="field-row">
+            <div class="field">
+              <label for="vn">Vita nominale V<sub>N</sub> (anni)</label>
+              <input type="number" id="vn" value="50">
+            </div>
+            <div class="field">
+              <label for="cu">Classe d'uso</label>
+              <select id="cu">
+                <option value="0.7">I — CU = 0,7</option>
+                <option value="1.0" selected>II — CU = 1,0</option>
+                <option value="1.5">III — CU = 1,5</option>
+                <option value="2.0">IV — CU = 2,0</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint" style="margin:-4px 0 12px;">V<sub>R</sub> = V<sub>N</sub>·C<sub>U</sub> (NTC 2018 §2.4.3), senza valore minimo: il limite V<sub>R</sub> ≥ 35 anni delle NTC 2008 non è più previsto.</div>
+          <div class="field">
+            <label for="soilCat">Categoria di sottosuolo</label>
+            <select id="soilCat">
+              <option value="A">A — Ammassi rocciosi / suoli molto rigidi</option>
+              <option value="B" selected>B — Rocce tenere e depositi molto addensati</option>
+              <option value="C">C — Depositi mediamente addensati</option>
+              <option value="D">D — Depositi scarsamente addensati</option>
+              <option value="E">E — Strato alluvionale su substrato rigido</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="topoCat">Categoria topografica</label>
+            <select id="topoCat">
+              <option value="T1" selected>T1 — Superficie pianeggiante (i &lt; 15°)</option>
+              <option value="T2">T2 — Pendio (i &gt; 15°)</option>
+              <option value="T3">T3 — Rilievo con larghezza in cresta modesta</option>
+              <option value="T4">T4 — Rilievo con larghezza in cresta molto modesta</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="damping">Smorzamento ξ (%)</label>
+              <input type="number" id="damping" value="5" min="1" max="30" step="0.5">
+            </div>
+            <div class="field">
+              <label for="qFactor">Fattore q (SLV, SLC)</label>
+              <input type="number" id="qFactor" value="1.5" min="1" max="6" step="0.1">
+            </div>
+          </div>
+          <div class="hint" style="margin-top:-4px;">q per SLV e SLC (Tab. 7.3.I: dissipativo q ≥ 1,5, non dissipativo q ≤ 1,5). Applicato automaticamente: SLO q = 1,0 · SLD q = min(q; 1,5).</div>
+        </div>
+      </div>
+
+      <details class="collapse no-print">
+        <summary>Screening liquefazione (opzionale)</summary>
+        <div class="panel-body">
+          <div class="hint" style="margin:0 0 10px;">Questa funzione passerà all'app dedicata <b>GeoHub-LiquiSite</b>.</div>
+          <div class="checkline">
+            <input type="checkbox" id="liqEnable">
+            <label for="liqEnable">Attiva verifica preliminare di liquefacibilità</label>
+          </div>
+          <div id="liqFields" class="subgrid-hidden">
+            <div class="field">
+              <label for="gwDepth">Profondità falda da p.c. (m)</label>
+              <input type="number" id="gwDepth" value="2.0" step="0.1">
+            </div>
+            <div class="field">
+              <label for="soilType">Tipologia terreno prevalente (0–15 m)</label>
+              <select id="soilType">
+                <option value="sabbia_sciolta">Sabbia sciolta / sabbia limosa (NSPT bassa)</option>
+                <option value="sabbia_addensata">Sabbia addensata</option>
+                <option value="ghiaia">Ghiaia</option>
+                <option value="argilla">Argilla / limo coesivo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <button class="btn btn-primary btn-block no-print" id="btnCalc" style="min-height:48px; font-size:15px;">Calcola parametri sismici</button>
+    </div>
+
+    <!-- ================= MAPPA ================= -->
+    <section class="panel map-card" aria-label="Mappa del sito">
+      <div id="map"></div>
+      <div class="map-foot">
+        <span>Carta di pericolosità: INGV, modello MPS04 (Meletti et al., 2006), <a href="https://data.ingv.it/dataset/193" target="_blank" rel="noopener">CC BY 4.0</a> · Il calcolo usa il reticolo ufficiale, non la carta.</span>
+        <span id="mapLockHint" class="no-print"></span>
+      </div>
+    </section>
   </div>
+
+  <div id="warnBox"></div>
+
+  <!-- ================= STATO LIMITE ================= -->
+  <section class="panel ls-bar" aria-label="Stato limite selezionato">
+    <div>
+      <div class="group-label" id="lsLabel">Stato limite</div>
+      <select id="lsSelect" class="sr-only" aria-labelledby="lsLabel" tabindex="-1">
+        <option value="SLO">SLO</option>
+        <option value="SLD">SLD</option>
+        <option value="SLV" selected>SLV</option>
+        <option value="SLC">SLC</option>
+      </select>
+      <div class="seg no-print" role="group" aria-labelledby="lsLabel" id="lsSeg">
+        <button type="button" data-ls="SLO" aria-pressed="false"><b>SLO</b><small>Operatività</small></button>
+        <button type="button" data-ls="SLD" aria-pressed="false"><b>SLD</b><small>Danno</small></button>
+        <button type="button" data-ls="SLV" aria-pressed="true"><b>SLV</b><small>Salvaguardia vita</small></button>
+        <button type="button" data-ls="SLC" aria-pressed="false"><b>SLC</b><small>Prev. collasso</small></button>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">T<sub>R</sub></div><div class="kpi-value"><span id="kpiTR">–</span> <span class="kpi-unit">anni</span></div></div>
+      <div class="kpi"><div class="kpi-label">a<sub>g</sub></div><div class="kpi-value"><span id="kpiAg">–</span> <span class="kpi-unit">g</span></div></div>
+      <div class="kpi"><div class="kpi-label">F<sub>0</sub></div><div class="kpi-value" id="kpiF0">–</div></div>
+      <div class="kpi"><div class="kpi-label">T*<sub>C</sub></div><div class="kpi-value"><span id="kpiTc0">–</span> <span class="kpi-unit">s</span></div></div>
+      <div class="kpi"><div class="kpi-label">S = S<sub>S</sub>·S<sub>T</sub></div><div class="kpi-value" id="kpiS">–</div></div>
+      <div class="kpi"><div class="kpi-label">a<sub>max</sub> = S·a<sub>g</sub></div><div class="kpi-value"><span id="kpiAmax">–</span> <span class="kpi-unit">g</span></div></div>
+    </div>
+  </section>
+
+  <div class="panel report-header" id="reportHeader">
+    <div class="rh-row">
+      <div><span class="rh-l">Sito / commessa</span><span class="rh-v" id="rhSite">–</span></div>
+      <div><span class="rh-l">Data del calcolo</span><span class="rh-v" id="rhDate">–</span></div>
+      <div><span class="rh-l">Versione applicativo</span><span class="rh-v" id="rhVersion">–</span></div>
+    </div>
+    <div class="rh-row">
+      <div><span class="rh-l">Coordinate del punto</span><span class="rh-v" id="rhCoords">–</span></div>
+      <div><span class="rh-l">Fonte dei parametri di pericolosità</span><span class="rh-v" id="rhSource">–</span></div>
+    </div>
+    <div class="rh-row">
+      <div style="flex:1 1 100%;"><span class="rh-l">Nodi del reticolo utilizzati (ID e distanza dal punto)</span><span class="rh-v" id="rhNodes">–</span></div>
+    </div>
+  </div>
+
+  <!-- ================= RISULTATI A SCHEDE ================= -->
+  <section class="panel" aria-label="Risultati">
+    <div class="tabs" role="tablist" aria-label="Sezioni dei risultati">
+      <button role="tab" id="tab-parametri" aria-controls="panel-parametri" aria-selected="true">Parametri</button>
+      <button role="tab" id="tab-spettri" aria-controls="panel-spettri" aria-selected="false" tabindex="-1">Spettri</button>
+      <button role="tab" id="tab-inquadramento" aria-controls="panel-inquadramento" aria-selected="false" tabindex="-1">Inquadramento sismico</button>
+    </div>
+
+    <!-- ---------- Parametri ---------- -->
+    <div class="tabpanel" role="tabpanel" id="panel-parametri" aria-labelledby="tab-parametri">
+      <div class="print-title">Parametri</div>
+      <div class="stack">
+        <div>
+          <h3 class="sub-title">Parametri di pericolosità sismica per gli stati limite</h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>Stato limite</th><th>P<sub>VR</sub></th><th>T<sub>R</sub> (anni)</th><th>a<sub>g</sub> (g)</th><th>F<sub>0</sub></th><th>T<sub>C</sub>* (s)</th></tr>
+              </thead>
+              <tbody id="hazardTableBody"></tbody>
+            </table>
+          </div>
+          <div class="disclaimer" id="gridDisclaimer">
+            <b>Nota metodologica:</b> a<sub>g</sub>, F<sub>0</sub> e T<sub>C</sub>* sono calcolati dal reticolo di riferimento (<code>grid-data.json</code>) con la doppia interpolazione dell'Allegato A al D.M. 14/01/2008: per ciascuno dei 4 vertici della maglia che contiene il sito, interpolazione log-log tra i periodi di ritorno di riferimento; poi media pesata con l'inverso della distanza. <span id="gridStatusLabel">Caricamento della griglia in corso…</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <h3 class="sub-title">Stato limite selezionato <small id="ampliLsLabel"></small></h3>
+            <div class="kpi-mini">
+              <div class="kpi"><div class="kpi-label">S<sub>S</sub></div><div class="kpi-value" id="kpiSs">–</div></div>
+              <div class="kpi"><div class="kpi-label">C<sub>C</sub></div><div class="kpi-value" id="kpiCc">–</div></div>
+              <div class="kpi"><div class="kpi-label">k<sub>h</sub></div><div class="kpi-value" id="kpiKh">–</div></div>
+              <div class="kpi"><div class="kpi-label">k<sub>v</sub></div><div class="kpi-value" id="kpiKv">–</div></div>
+            </div>
+            <table class="data-table"><tbody id="ampliTableBody"></tbody></table>
+          </div>
+          <div>
+            <h3 class="sub-title">Pericolosità di base <small>· 9 periodi di ritorno di riferimento</small></h3>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead><tr><th>T<sub>R</sub> (anni)</th><th>PoE in 50 anni</th><th>a<sub>g</sub> (g)</th><th>F<sub>0</sub></th><th>T<sub>C</sub>* (s)</th></tr></thead>
+                <tbody id="fase1TableBody"></tbody>
+              </table>
+            </div>
+            <div class="hint">Valori del sito per i 9 T<sub>R</sub> del reticolo (Allegato B), come nella Fase 1 del foglio Spettri-NTC del CSLP.</div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="sub-title">Screening pendii e liquefazione</h3>
+          <div class="hint" style="margin:0 0 10px;">I coefficienti k<sub>h</sub>, k<sub>v</sub> (β<sub>s</sub> da NTC 2018, Tab. 7.11.I) passeranno all'app <b>GeoHub-SoilSite</b>; lo screening di liquefazione all'app <b>GeoHub-LiquiSite</b>.</div>
+          <table class="data-table">
+            <tr><td>Categoria topografica</td><td id="outTopo">–</td></tr>
+            <tr><td>Coefficiente sismico orizzontale k<sub>h</sub></td><td id="outKh2">–</td></tr>
+            <tr><td>Coefficiente sismico verticale k<sub>v</sub></td><td id="outKv2">–</td></tr>
+          </table>
+          <div id="liqResult"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- Spettri ---------- -->
+    <div class="tabpanel" role="tabpanel" id="panel-spettri" aria-labelledby="tab-spettri" hidden>
+      <div class="print-title">Spettri di risposta</div>
+      <div class="stack">
+        <div class="grid-2">
+          <div>
+            <h3 class="sub-title">Spettri di risposta elastici <small>· stato limite selezionato</small></h3>
+            <div class="chart-toolbar no-print">
+              <label for="spectrumMode">Componente</label>
+              <select id="spectrumMode">
+                <option value="both" selected>Orizzontale + verticale</option>
+                <option value="h">Solo orizzontale</option>
+                <option value="v">Solo verticale</option>
+              </select>
+            </div>
+            <div class="chart-wrap"><canvas id="spectrumChart"></canvas></div>
+            <div class="legend-note">
+              <span><span class="legend-swatch" style="background:#2f7dd6;"></span>S<sub>e</sub> orizzontale (T)</span>
+              <span><span class="legend-swatch" style="background:#b5501a;"></span>S<sub>ve</sub> verticale (T)</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="sub-title">Spettri elastici per i 9 periodi di ritorno <small>· suolo A, T1, ξ = 5 %</small></h3>
+            <div class="chart-toolbar no-print"><span class="hint" style="margin:0;">Come la Fase 1 di Spettri-NTC: pericolosità di base del sito su suolo rigido.</span></div>
+            <div class="chart-wrap"><canvas id="famChart"></canvas></div>
+            <div class="legend-note" id="famLegend"></div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 12px; align-items:baseline;">
+            <h3 class="sub-title">Spettri di risposta di progetto S<sub>d</sub>(T)</h3>
+            <div style="font-size:12.5px; color:var(--slate-600);">Stato limite selezionato · q = <span id="designQLabel">–</span></div>
+          </div>
+          <div class="chart-toolbar no-print">
+            <label for="designMode">Componente</label>
+            <select id="designMode">
+              <option value="both" selected>Orizzontale + verticale</option>
+              <option value="h">Solo orizzontale</option>
+              <option value="v">Solo verticale</option>
+            </select>
+          </div>
+          <div class="grid-2">
+            <div>
+              <div class="chart-wrap" style="height:320px;"><canvas id="designChart"></canvas></div>
+              <div class="legend-note" id="designLegend"></div>
+            </div>
+            <div>
+              <table class="data-table">
+                <thead><tr><th>Grandezza</th><th>Orizzontale</th><th>Verticale</th></tr></thead>
+                <tbody id="designTableBody"></tbody>
+              </table>
+              <div class="disclaimer" id="designNote"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- Inquadramento ---------- -->
+    <div class="tabpanel" role="tabpanel" id="panel-inquadramento" aria-labelledby="tab-inquadramento" hidden>
+      <div class="print-title">Inquadramento sismico del sito</div>
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-header"><h2>Comune e classificazione sismica</h2></div>
+          <div class="panel-body" id="s2Body"><div class="hint">In attesa del calcolo…</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2>Eventi sismici strumentali nel raggio</h2></div>
+          <div class="panel-body">
+            <div class="chart-toolbar no-print">
+              <label for="s3Raggio">Raggio</label>
+              <select id="s3Raggio"><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
+              <label for="s3Mag">Magnitudo ≥</label>
+              <select id="s3Mag"><option value="2.0">2,0</option><option value="2.5" selected>2,5</option><option value="3.0">3,0</option><option value="3.5">3,5</option><option value="4.0">4,0</option></select>
+              <label for="s3Anno">Dal</label>
+              <input type="number" id="s3Anno" value="1985" min="1985" step="1" style="width:84px;">
+              <button class="btn btn-sm" id="s3Btn">Aggiorna</button>
+            </div>
+            <div id="s3Body"><div class="hint">In attesa del calcolo…</div></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header"><h2>Storia sismica della località</h2></div>
+            <div class="panel-body" id="s4Body"><div class="hint">In attesa del calcolo…</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2>Terremoti storici con epicentro nel raggio</h2></div>
+            <div class="panel-body">
+              <div class="chart-toolbar no-print">
+                <label for="s4bRaggio">Raggio</label>
+                <select id="s4bRaggio"><option value="10">10 km</option><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
+              </div>
+              <div id="s4bBody"><div class="hint">In attesa del calcolo…</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2>Faglie attive e capaci (ITHACA)</h2></div>
+          <div class="panel-body">
+            <div class="chart-toolbar no-print">
+              <label for="s5Raggio">Raggio di ricerca (non normativo)</label>
+              <select id="s5Raggio"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="20">20 km</option></select>
+              <button class="btn btn-sm" id="s5Btn">Aggiorna</button>
+            </div>
+            <div id="s5Body"><div class="hint">In attesa del calcolo…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
-<div class="app">
-
-  <!-- ================= LEFT: INPUT ================= -->
-  <div class="col-input">
-
-    <div class="panel">
-      <div class="panel-header"><h2>Ubicazione del sito</h2></div>
-      <div class="panel-body">
-        <div id="map"></div>
-        <div class="hint no-print">Clicca sulla mappa per selezionare il sito, oppure inserisci le coordinate manualmente.</div>
-        <div class="divider"></div>
-        <div class="field-row">
-          <div class="field">
-            <label for="lat">Latitudine (WGS84)</label>
-            <input type="number" id="lat" step="0.0001" value="42.3499">
-          </div>
-          <div class="field">
-            <label for="lon">Longitudine (WGS84)</label>
-            <input type="number" id="lon" step="0.0001" value="13.3995">
-          </div>
-        </div>
-        <div class="field" style="margin-top:12px;">
-          <label for="siteName">Nome sito / commessa (facoltativo)</label>
-          <input type="text" id="siteName" placeholder="es. Comune di …, località …, comm. 2026/xx">
-        </div>
-        <div class="hint">Default: L'Aquila. Reticolo di riferimento Allegato B (10.751 nodi) + Tabella 2 per le isole.</div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Parametri geotecnici e d'uso</h2></div>
-      <div class="panel-body">
-        <div class="field">
-          <label for="soilCat">Categoria di sottosuolo</label>
-          <select id="soilCat">
-            <option value="A">A — Ammassi rocciosi / suoli molto rigidi</option>
-            <option value="B" selected>B — Rocce tenere e depositi molto addensati</option>
-            <option value="C">C — Depositi mediamente addensati</option>
-            <option value="D">D — Depositi scarsamente addensati</option>
-            <option value="E">E — Strato alluvionale su substrato rigido</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="topoCat">Categoria topografica</label>
-          <select id="topoCat">
-            <option value="T1" selected>T1 — Superficie pianeggiante (i &lt; 15°)</option>
-            <option value="T2">T2 — Pendio (i &gt; 15°)</option>
-            <option value="T3">T3 — Rilievo con larghezza in cresta modesta</option>
-            <option value="T4">T4 — Rilievo con larghezza in cresta molto modesta</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label for="vn">Vita nominale V<sub>N</sub> (anni)</label>
-            <input type="number" id="vn" value="50">
-          </div>
-          <div class="field">
-            <label for="cu">Classe d'uso</label>
-            <select id="cu">
-              <option value="0.7">I — C<sub>U</sub> = 0.7</option>
-              <option value="1.0" selected>II — C<sub>U</sub> = 1.0</option>
-              <option value="1.5">III — C<sub>U</sub> = 1.5</option>
-              <option value="2.0">IV — C<sub>U</sub> = 2.0</option>
-            </select>
-          </div>
-        </div>
-        <div class="hint" style="margin:-4px 0 10px;">V<sub>R</sub> = V<sub>N</sub>·C<sub>U</sub> (NTC 2018 §2.4.3), senza valore minimo: il limite V<sub>R</sub> ≥ 35 anni delle NTC 2008 non è più previsto.</div>
-        <div class="field">
-          <label for="damping">Smorzamento viscoso ξ (%)</label>
-          <input type="number" id="damping" value="5" min="1" max="30" step="0.5">
-        </div>
-        <div class="field">
-          <label for="qFactor">Fattore di comportamento q</label>
-          <input type="number" id="qFactor" value="1.5" min="1" max="6" step="0.1">
-          <div class="hint">Valore per SLV e SLC (Tab. 7.3.I: dissipativo q ≥ 1,5, non dissipativo q ≤ 1,5). Applicato automaticamente: SLO q = 1,0 · SLD q = min(q; 1,5).</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Screening liquefazione (opzionale)</h2></div>
-      <div class="panel-body">
-        <div class="hint" style="margin:0 0 10px;">Questa funzione passerà all'app dedicata <b>GeoHub-LiquiSite</b>.</div>
-        <div class="checkline">
-          <input type="checkbox" id="liqEnable">
-          <label for="liqEnable">Attiva verifica preliminare di liquefacibilità</label>
-        </div>
-        <div id="liqFields" class="subgrid-hidden">
-          <div class="field">
-            <label for="gwDepth">Profondità falda da p.c. (m)</label>
-            <input type="number" id="gwDepth" value="2.0" step="0.1">
-          </div>
-          <div class="field">
-            <label for="soilType">Tipologia terreno prevalente (0–15 m)</label>
-            <select id="soilType">
-              <option value="sabbia_sciolta">Sabbia sciolta / sabbia limosa (NSPT bassa)</option>
-              <option value="sabbia_addensata">Sabbia addensata</option>
-              <option value="ghiaia">Ghiaia</option>
-              <option value="argilla">Argilla / limo coesivo</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-block no-print" id="btnCalc" style="padding:12px; font-size:14.5px;">Calcola parametri sismici</button>
-  </div>
-
-  <!-- ================= RIGHT: OUTPUT ================= -->
-  <div class="col-output">
-
-    <div id="warnBox"></div>
-
-    <div class="report-header" id="reportHeader">
-      <div class="rh-row">
-        <div><span class="rh-l">Sito / commessa</span><span class="rh-v" id="rhSite">–</span></div>
-        <div><span class="rh-l">Data del calcolo</span><span class="rh-v" id="rhDate">–</span></div>
-        <div><span class="rh-l">Versione applicativo</span><span class="rh-v" id="rhVersion">–</span></div>
-      </div>
-      <div class="rh-row">
-        <div><span class="rh-l">Coordinate del punto</span><span class="rh-v" id="rhCoords">–</span></div>
-        <div><span class="rh-l">Fonte dei parametri di pericolosità</span><span class="rh-v" id="rhSource">–</span></div>
-      </div>
-      <div class="rh-row">
-        <div style="flex:1 1 100%;"><span class="rh-l">Nodi del reticolo utilizzati (ID e distanza dal punto)</span><span class="rh-v" id="rhNodes">–</span></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Parametri di pericolosità sismica di base</h2></div>
-      <div class="panel-body">
-        <table class="data-table">
-          <thead>
-            <tr><th>Stato limite</th><th>P<sub>VR</sub></th><th>T<sub>R</sub> (anni)</th><th>a<sub>g</sub> (g)</th><th>F<sub>0</sub></th><th>T<sub>C</sub>* (s)</th></tr>
-          </thead>
-          <tbody id="hazardTableBody"></tbody>
-        </table>
-        <div class="disclaimer" id="gridDisclaimer">
-          <b>Nota metodologica:</b> a<sub>g</sub>, F<sub>0</sub> e T<sub>C</sub>* sono calcolati caricando la griglia da <code>grid-data.json</code> con l'algoritmo di doppia interpolazione dell'Allegato A al D.M. 14/01/2008 (interpolazione spaziale con pesi inversamente proporzionali alla distanza sui 4 vertici della maglia del reticolo che contiene il sito + interpolazione log-log tra i periodi di ritorno di riferimento). <span id="gridStatusLabel">Caricamento della griglia in corso…</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Sintesi stato limite selezionato</h2>
-        <div class="no-print">
-          <label style="font-size:12.5px; color:var(--slate-600); margin-right:6px;">Stato limite:</label>
-          <select id="lsSelect" style="padding:5px 8px; border-radius:3px; border:1px solid var(--line); font-family:var(--font-mono);">
-            <option value="SLO">SLO</option>
-            <option value="SLD">SLD</option>
-            <option value="SLV" selected>SLV</option>
-            <option value="SLC">SLC</option>
-          </select>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div class="kpi-row">
-          <div class="kpi"><div class="kpi-label">S<sub>S</sub> · S<sub>T</sub></div><div class="kpi-value" id="kpiS">–</div></div>
-          <div class="kpi"><div class="kpi-label">a<sub>max</sub> = S·a<sub>g</sub></div><div class="kpi-value" id="kpiAmax">–</div><div class="kpi-unit">g</div></div>
-          <div class="kpi"><div class="kpi-label">Coefficiente k<sub>h</sub></div><div class="kpi-value" id="kpiKh">–</div></div>
-          <div class="kpi"><div class="kpi-label">Coefficiente k<sub>v</sub></div><div class="kpi-value" id="kpiKv">–</div></div>
-        </div>
-        <div class="divider"></div>
-        <table class="data-table">
-          <tbody id="ampliTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Spettri di risposta elastici</h2></div>
-      <div class="chart-toolbar no-print">
-        <label>Componente:</label>
-        <select id="spectrumMode" style="padding:5px 8px; border-radius:3px; border:1px solid var(--line);">
-          <option value="both" selected>Orizzontale + Verticale</option>
-          <option value="h">Solo orizzontale</option>
-          <option value="v">Solo verticale</option>
-        </select>
-      </div>
-      <div class="chart-wrap"><canvas id="spectrumChart"></canvas></div>
-      <div class="legend-note">
-        <span><span class="legend-swatch" style="background:#2f7dd6;"></span>S<sub>e</sub> orizzontale (T)</span>
-        <span><span class="legend-swatch" style="background:#b5501a;"></span>S<sub>ve</sub> verticale (T)</span>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Spettri di risposta di progetto S<sub>d</sub>(T)</h2>
-        <div style="font-size:12px; color:var(--slate-600);">Stato limite selezionato · q = <span id="designQLabel">–</span></div>
-      </div>
-      <div class="chart-toolbar no-print">
-        <label>Componente:</label>
-        <select id="designMode" style="padding:5px 8px; border-radius:3px; border:1px solid var(--line);">
-          <option value="both" selected>Orizzontale + Verticale</option>
-          <option value="h">Solo orizzontale</option>
-          <option value="v">Solo verticale</option>
-        </select>
-      </div>
-      <div class="chart-wrap" style="height:320px;"><canvas id="designChart"></canvas></div>
-      <div class="legend-note" id="designLegend"></div>
-      <div class="panel-body" style="padding-top:0;">
-        <table class="data-table">
-          <thead><tr><th>Grandezza</th><th>Orizzontale</th><th>Verticale</th></tr></thead>
-          <tbody id="designTableBody"></tbody>
-        </table>
-        <div class="disclaimer" id="designNote"></div>
-      </div>
-    </div>
-
-    <div class="section-title">Inquadramento sismico del sito</div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Comune e classificazione sismica</h2></div>
-      <div class="panel-body" id="s2Body"><div class="hint">In attesa del calcolo…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Eventi sismici strumentali nel raggio</h2></div>
-      <div class="chart-toolbar no-print">
-        <label>Raggio:</label>
-        <select id="s3Raggio"><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
-        <label>Magnitudo ≥</label>
-        <select id="s3Mag"><option value="2.0">2,0</option><option value="2.5" selected>2,5</option><option value="3.0">3,0</option><option value="3.5">3,5</option><option value="4.0">4,0</option></select>
-        <label>Dal</label>
-        <input type="number" id="s3Anno" value="1985" min="1985" step="1" style="width:76px;">
-        <button class="btn btn-sm" id="s3Btn">Aggiorna</button>
-      </div>
-      <div class="panel-body" id="s3Body"><div class="hint">In attesa del calcolo…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Storia sismica della località</h2></div>
-      <div class="panel-body" id="s4Body"><div class="hint">In attesa del calcolo…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Terremoti storici con epicentro nel raggio</h2></div>
-      <div class="chart-toolbar no-print">
-        <label>Raggio:</label>
-        <select id="s4bRaggio"><option value="10">10 km</option><option value="20">20 km</option><option value="30" selected>30 km</option><option value="50">50 km</option></select>
-      </div>
-      <div class="panel-body" id="s4bBody"><div class="hint">In attesa del calcolo…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Faglie attive e capaci (ITHACA)</h2></div>
-      <div class="chart-toolbar no-print">
-        <label>Raggio di ricerca (non normativo):</label>
-        <select id="s5Raggio"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="20">20 km</option></select>
-        <button class="btn btn-sm" id="s5Btn">Aggiorna</button>
-      </div>
-      <div class="panel-body" id="s5Body"><div class="hint">In attesa del calcolo…</div></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header"><h2>Screening pendii &amp; liquefazione</h2></div>
-      <div class="panel-body">
-        <div class="hint" style="margin:0 0 10px;">I coefficienti k<sub>h</sub>, k<sub>v</sub> (β<sub>s</sub> da NTC 2018, Tab. 7.11.I) passeranno all'app <b>GeoHub-SoilSite</b>; lo screening di liquefazione all'app <b>GeoHub-LiquiSite</b>.</div>
-        <table class="data-table">
-          <tr><td>Categoria topografica</td><td id="outTopo">–</td></tr>
-          <tr><td>Coefficiente sismico orizzontale k<sub>h</sub></td><td id="outKh2">–</td></tr>
-          <tr><td>Coefficiente sismico verticale k<sub>v</sub></td><td id="outKv2">–</td></tr>
-        </table>
-        <div id="liqResult"></div>
-      </div>
-    </div>
-
-    <div class="footer-note">
-      <span id="footerVersion">SismaSite</span> · Strumento di supporto preliminare secondo D.M. 17/01/2018 (NTC 2018), Circolare n.7/2019 e Allegati A e B al D.M. 14/01/2008. Non sostituisce la relazione geologica/geotecnica né i valori ufficiali della pericolosità sismica INGV.<br>
-      Sviluppata da <a href="https://github.com/fabio-duronio" target="_blank" rel="noopener">Fabio Duronio</a>, geologo · © 2026 · Software libero con licenza <a href="https://github.com/fabio-duronio/geohub-sismasite/blob/main/LICENSE" target="_blank" rel="noopener">GNU AGPL-3.0</a> · <a href="https://github.com/fabio-duronio/geohub-sismasite" target="_blank" rel="noopener">Codice sorgente</a>
-    </div>
-  </div>
+<div class="footer-note" id="fonti">
+  <span id="footerVersion">SismaSite</span> · Strumento di supporto preliminare secondo D.M. 17/01/2018 (NTC 2018), Circolare n.7/2019 e Allegati A e B al D.M. 14/01/2008. Non sostituisce la relazione geologica/geotecnica né i valori ufficiali della pericolosità sismica INGV.<br>
+  Carta di pericolosità: Meletti C., Montaldo V., Stucchi M., Martinelli F. (2006), Database della pericolosità sismica MPS04, INGV, <a href="https://doi.org/10.13127/sh/mps04/db" target="_blank" rel="noopener">doi:10.13127/sh/mps04/db</a>, CC BY 4.0.<br>
+  Sviluppata da <a href="https://github.com/fabio-duronio" target="_blank" rel="noopener">Fabio Duronio</a>, geologo · © 2026 · Software libero con licenza <a href="https://github.com/fabio-duronio/geohub-sismasite/blob/main/LICENSE" target="_blank" rel="noopener">GNU AGPL-3.0</a> · <a href="https://github.com/fabio-duronio/geohub-sismasite" target="_blank" rel="noopener">Codice sorgente</a> · <a href="https://github.com/fabio-duronio/geohub-sismasite#validazione" target="_blank" rel="noopener">Validazione</a>
 </div>
 
 <script>
@@ -587,10 +638,24 @@ document.addEventListener('DOMContentLoaded', function initMap(){
     return;
   }
 
-  map = L.map('map', {zoomControl:true}).setView([42.3499, 13.3995], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'&copy; OpenStreetMap contributors', maxZoom:18
-  }).addTo(map);
+  map = L.map('map', {zoomControl:true, scrollWheelZoom:false}).setView([42.3499, 13.3995], 7);
+
+  // Basi cartografiche (attribuzioni richieste dai fornitori)
+  const basi = {
+    'Stradale (OpenStreetMap)': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; OpenStreetMap contributors', maxZoom:19 }),
+    'Rilievo (OpenTopoMap)': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution:'&copy; OpenStreetMap contributors, SRTM · stile &copy; OpenTopoMap (CC BY-SA)', maxZoom:17 }),
+    'Satellite (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution:'Immagini &copy; Esri — Esri, Maxar, Earthstar Geographics, GIS User Community', maxZoom:19 })
+  };
+  basi['Stradale (OpenStreetMap)'].addTo(map);
+  L.control.layers(basi, null, {position:'topleft', collapsed:true}).addTo(map);
+  L.control.scale({imperial:false, position:'bottomleft'}).addTo(map);
+
+  hzInit();
+  nodiLayer = L.layerGroup().addTo(map);
+  lockInit();
 
   marker = L.marker([42.3499,13.3995], {draggable:true}).addTo(map);
 
@@ -603,6 +668,157 @@ document.addEventListener('DOMContentLoaded', function initMap(){
     setCoordFields(p.lat, p.lng);
   });
 });
+
+/* ----------------------------------------------------------------------
+   1-bis. CARTA DI PERICOLOSITA' INGV (MPS04) — servizio WMS ufficiale
+   Meletti C., Montaldo V., Stucchi M., Martinelli F. (2006). Database della
+   pericolosità sismica MPS04. INGV. doi:10.13127/sh/mps04/db — CC BY 4.0.
+   27 layer PGA: 9 probabilità di eccedenza in 50 anni (= i 9 T_R del
+   reticolo) × percentili 16/50/84. La carta è solo un inquadramento visivo:
+   il calcolo usa sempre il reticolo dell'Allegato B (grid-data.json).
+---------------------------------------------------------------------- */
+const MPS04_WMS = 'https://mps04-ws.pi.ingv.it/wms_mps04_pga';
+const MPS04_POE = [   // [PoE in 50 anni (%), T_R del reticolo (anni)]
+  [81,30],[63,50],[50,72],[39,101],[30,140],[22,201],[10,475],[5,975],[2,2475]
+];
+const hz = { layer:null, poe:10, perc:50, segui:true, attivo:true, opacita:0.65 };
+let nodiLayer = null;
+
+function hzNomeLayer(){ return 'shkValsPoeCost_PGA_' + hz.perc + 'oPerc_' + hz.poe + 'poe_'; }
+function hzLegendaUrl(){
+  return MPS04_WMS + '?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYER=' + hzNomeLayer();
+}
+function poeDaTR(TR){
+  let best = MPS04_POE[0], d = Infinity;
+  for(const x of MPS04_POE){ const dd = Math.abs(Math.log(x[1]/TR)); if(dd < d){ d = dd; best = x; } }
+  return best[0];
+}
+function hzAggiorna(){
+  if(!map) return;
+  if(hz.layer){ map.removeLayer(hz.layer); hz.layer = null; }
+  if(hz.attivo){
+    hz.layer = L.tileLayer.wms(MPS04_WMS, {
+      layers: hzNomeLayer(), format:'image/png', transparent:true, version:'1.1.1',
+      opacity: hz.opacita, attribution:'Pericolosità: INGV MPS04 (Meletti et al., 2006) CC BY 4.0'
+    }).addTo(map);
+  }
+  const sel = document.getElementById('hzPoe'); if(sel) sel.value = String(hz.poe);
+  const leg = document.getElementById('hzLegendImg');
+  if(leg){ leg.src = hzLegendaUrl(); leg.alt = 'Legenda a_g, PoE ' + hz.poe + ' % in 50 anni, percentile ' + hz.perc; }
+  const tr = MPS04_POE.find(x=>x[0]===hz.poe)[1];
+  const lab = document.getElementById('hzLegendLabel');
+  if(lab) lab.innerHTML = 'a<sub>g</sub> [g] · PoE ' + hz.poe + ' % in 50 anni (T<sub>R</sub> ' + tr + ' anni) · ' +
+    (hz.perc === 50 ? 'mediana' : hz.perc + '° percentile');
+}
+function hzInit(){
+  const Ctrl = L.Control.extend({
+    options:{position:'topright'},
+    onAdd: function(){
+      const div = L.DomUtil.create('div', 'hz-ctrl');
+      div.innerHTML = `
+        <div class="hz-title"><span>Pericolosità sismica a<sub>g</sub><br><span class="hz-sub">INGV · modello MPS04</span></span>
+          <span><button type="button" class="hz-toggle" id="hzToggle" aria-expanded="true">Riduci</button>
+          <input type="checkbox" id="hzOn" checked aria-label="Mostra la carta di pericolosità"></span></div>
+        <div class="hz-body">
+          <div class="hz-row"><span class="hz-small">Probabilità di eccedenza in 50 anni</span>
+            <select id="hzPoe" aria-label="Probabilità di eccedenza in 50 anni">${MPS04_POE.map(([p,t])=>`<option value="${p}">${p} % · T_R ${t} anni</option>`).join('')}</select></div>
+          <label><input type="checkbox" id="hzSegui" checked> Segui lo stato limite selezionato</label>
+          <div class="hz-row"><span class="hz-small">Percentile</span>
+            <select id="hzPerc" aria-label="Percentile"><option value="16">16°</option><option value="50" selected>50° (mediana)</option><option value="84">84°</option></select></div>
+          <div class="hz-row"><span class="hz-small">Opacità <span id="hzOpLab">65</span> %</span>
+            <input type="range" id="hzOp" min="10" max="100" step="5" value="65" aria-label="Opacità della carta"></div>
+          <label><input type="checkbox" id="hzNodi" checked> Vertici della maglia (4 nodi)</label>
+          <div class="hz-legend"><div class="hz-small" id="hzLegendLabel" style="margin-bottom:6px;"></div>
+            <img id="hzLegendImg" alt="Legenda della carta di pericolosità" loading="lazy"></div>
+        </div>`;
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+      return div;
+    }
+  });
+  new Ctrl().addTo(map);
+  const $ = id=>document.getElementById(id);
+  $('hzOn').addEventListener('change', e=>{ hz.attivo = e.target.checked; hzAggiorna(); });
+  $('hzPoe').addEventListener('change', e=>{ hz.poe = parseInt(e.target.value,10); hz.segui = false; $('hzSegui').checked = false; hzAggiorna(); });
+  $('hzSegui').addEventListener('change', e=>{ hz.segui = e.target.checked; if(hz.segui) hzSeguiSL(); });
+  $('hzPerc').addEventListener('change', e=>{ hz.perc = parseInt(e.target.value,10); hzAggiorna(); });
+  $('hzOp').addEventListener('input', e=>{ hz.opacita = parseInt(e.target.value,10)/100; $('hzOpLab').textContent = e.target.value;
+    if(hz.layer) hz.layer.setOpacity(hz.opacita); });
+  $('hzNodi').addEventListener('change', ()=>disegnaNodi());
+  $('hzToggle').addEventListener('click', e=>{
+    const c = e.target.closest('.hz-ctrl'); const chiuso = c.classList.toggle('hz-collapsed');
+    e.target.textContent = chiuso ? 'Apri' : 'Riduci'; e.target.setAttribute('aria-expanded', String(!chiuso));
+  });
+  if(window.matchMedia && window.matchMedia('(max-width:640px)').matches){
+    const c = document.querySelector('.hz-ctrl'); c.classList.add('hz-collapsed');
+    $('hzToggle').textContent = 'Apri'; $('hzToggle').setAttribute('aria-expanded','false');
+  }
+  hzAggiorna();
+}
+// PoE della carta = livello con T_R più vicino a quello dello stato limite selezionato
+function hzSeguiSL(){
+  if(!hz.segui || !lastResults) return;
+  const code = document.getElementById('lsSelect').value;
+  const p = poeDaTR(lastResults.byLS[code].TR);
+  if(p !== hz.poe){ hz.poe = p; hzAggiorna(); }
+}
+
+/* Vertici della maglia usati nell'interpolazione: coordinate ED50 del reticolo
+   riportate in WGS84 per la mappa (inversione iterativa di wgs84ToEd50). */
+function ed50ToWgs84(lat, lon){
+  let la = lat, lo = lon;
+  for(let i=0; i<3; i++){ const e = wgs84ToEd50(la, lo); la += lat - e.lat; lo += lon - e.lon; }
+  return {lat:la, lon:lo};
+}
+function disegnaNodi(){
+  if(!nodiLayer) return;
+  nodiLayer.clearLayers();
+  const on = document.getElementById('hzNodi');
+  if(!lastResults || (on && !on.checked)) return;
+  const r = lastResults.byLS['SLV'];
+  if(r.fonte && r.fonte.indexOf('Tabella 2') >= 0) return;
+  const sel = interpNodes(lastResults.latEd, lastResults.lonEd);
+  const pts = sel.nodi.map(n=>{ const w = ed50ToWgs84(n.lat, n.lon); return [w.lat, w.lon, n]; });
+  if(sel.metodo === 'maglia' && pts.length === 4){
+    L.polygon(pts.map(p=>[p[0],p[1]]), {color:'#0b1521', weight:1.5, dashArray:'5 4', fill:false, interactive:false}).addTo(nodiLayer);
+  }
+  pts.forEach(([la,lo,n])=>{
+    L.circleMarker([la,lo], {radius:5, color:'#ffffff', weight:2, fillColor:'#0b1521', fillOpacity:1})
+      .bindTooltip('Nodo ID ' + n.id + ' · ' + n.d.toFixed(2).replace('.', ',') + ' km').addTo(nodiLayer);
+  });
+}
+
+/* Blocco della mappa: evita che lo scorrimento della pagina sposti o ingrandisca
+   la mappa per errore (rotella sul computer, dito sul telefono). */
+let mappaSbloccata = false;
+function lockInit(){
+  const touch = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+  const hint = document.getElementById('mapLockHint');
+  function applica(){
+    if(mappaSbloccata){
+      map.dragging.enable(); map.touchZoom.enable(); map.scrollWheelZoom.enable();
+    } else {
+      if(touch){ map.dragging.disable(); map.touchZoom.disable(); }
+      map.scrollWheelZoom.disable();
+    }
+    const b = document.getElementById('lockBtn');
+    if(b){ b.innerHTML = mappaSbloccata ? ICON_UNLOCK : ICON_LOCK;
+      b.setAttribute('aria-label', mappaSbloccata ? 'Blocca la mappa' : 'Sblocca la mappa (spostamento e zoom con rotella o dita)');
+      b.title = b.getAttribute('aria-label'); }
+    if(hint) hint.textContent = mappaSbloccata ? 'Mappa sbloccata' :
+      (touch ? 'Mappa bloccata: tocca il lucchetto per spostarla' : 'Rotella disattivata: usa + / − o il lucchetto');
+  }
+  const Ctrl = L.Control.extend({ options:{position:'topleft'}, onAdd: function(){
+    const d = L.DomUtil.create('div', 'leaflet-bar');
+    d.innerHTML = '<button type="button" class="lock-ctrl" id="lockBtn"></button>';
+    L.DomEvent.disableClickPropagation(d);
+    d.querySelector('button').addEventListener('click', ()=>{ mappaSbloccata = !mappaSbloccata; applica(); });
+    return d; } });
+  new Ctrl().addTo(map);
+  applica();
+}
+const ICON_LOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const ICON_UNLOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e4e8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
 
 function setCoordFields(lat,lon){
   document.getElementById('lat').value = lat.toFixed(4);
@@ -732,8 +948,8 @@ function islandAt(lat, lon){
   return null;
 }
 
-const APP_VERSION = '1.6.0';
-const APP_VERSION_DATE = '2026-11-05';
+const APP_VERSION = '1.7.0';
+const APP_VERSION_DATE = '2026-11-06';
 
 let GRID = null;      // rappresentazione interna unificata: {meta, count, id[], lon[], lat[], ag[t][i], F0[t][i], Tc[t][i]}
 let gridLoadError = null;
@@ -1262,8 +1478,8 @@ function runCalculation(){
        <br>Avvia un server locale nella cartella dell'app (es. <code>python3 -m http.server</code>) e apri la pagina da
        <code>http://localhost:8000/</code>. Se la pagina è pubblicata online, verifica che <code>grid-data.json</code>
        sia presente e raggiungibile.</div>`;
-    ['kpiS','kpiAmax','kpiKh','kpiKv'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='–'; });
-    ['hazardTableBody','ampliTableBody','liqResult'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=''; });
+    ['kpiS','kpiAmax','kpiKh','kpiKv','kpiTR','kpiAg','kpiF0','kpiTc0','kpiSs','kpiCc'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='–'; });
+    ['hazardTableBody','ampliTableBody','liqResult','fase1TableBody'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML=''; });
     const rh=['rhSite','rhDate','rhVersion','rhCoords','rhSource','rhNodes'];
     rh.forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent='–'; });
     lastResults = null;
@@ -1328,10 +1544,14 @@ function runCalculation(){
   });
 
   lastResults = {lat, lon, latEd:ed.lat, lonEd:ed.lon, VR, VN, CU, soilCat, topoCat, damping, eta, byLS};
+  document.getElementById('edChip').textContent = ed.lat.toFixed(5) + ' · ' + ed.lon.toFixed(5);
+  document.getElementById('comuneChip').textContent = '…';
   renderWarnings();
   updateReportHeader();
   renderHazardTable();
+  renderFase1();
   renderSelectedLS();
+  disegnaNodi();
   renderLiquefaction();
   aggiornaInquadramento(lat, lon);
 }
@@ -1416,15 +1636,63 @@ function renderHazardTable(){
   });
 }
 
+/* Pericolosità di base del sito per i 9 T_R del reticolo (come la Fase 1 di
+   Spettri-NTC): tabella e spettri elastici su suolo A, T1, ξ = 5 % (η = 1). */
+const FAM_COLORI = ['#9ecae1','#5fc8b8','#2fa45a','#b8ad2a','#f4b13c','#ee8f2e','#e2681f','#c9432a','#6b2e7e'];
+let famChart = null;
+function renderFase1(){
+  const tbody = document.getElementById('fase1TableBody');
+  if(!tbody || !lastResults) return;
+  const L = lastResults;
+  const trs = (GRID && GRID.meta && GRID.meta.trValues) ? GRID.meta.trValues : [30,50,72,101,140,201,475,975,2475];
+  const righe = trs.map(TR=>{
+    const p = hazardAtTR(L.latEd, L.lonEd, TR, L.lat, L.lon);
+    const poe = 100*(1 - Math.exp(-50/TR));
+    return {TR, poe, ag:p.ag, F0:p.F0, Tc0:p.Tc0};
+  });
+  tbody.innerHTML = righe.map(x=>`<tr><td>${x.TR}</td><td>${x.poe.toFixed(0)} %</td><td>${fmt(x.ag,3)}</td><td>${fmt(x.F0,3)}</td><td>${fmt(x.Tc0,3)}</td></tr>`).join('');
+  L.fase1 = righe;
+
+  if(!chartDisponibile()){ mostraGraficoNonDisponibile('#famChart', 260); return; }
+  const T = []; for(let t=0; t<=4.0001; t+=0.02) T.push(t);
+  const datasets = righe.map((x,i)=>{
+    const Tc = x.Tc0, Tb = Tc/3, Td = 4*x.ag + 1.6;   // suolo A: C_C = 1, S = 1
+    return {label:'T_R ' + x.TR + ' anni', data:T.map(t=>seHorizontal(t, x.ag, 1, x.F0, Tb, Tc, Td, 1)),
+            borderColor:FAM_COLORI[i], backgroundColor:'transparent', borderWidth: x.TR===475 ? 2.6 : 1.8, pointRadius:0, tension:0};
+  });
+  if(famChart) famChart.destroy();
+  famChart = new Chart(document.getElementById('famChart').getContext('2d'), {
+    type:'line',
+    data:{ labels:T.map(t=>t.toFixed(2)), datasets },
+    options:{ responsive:true, maintainAspectRatio:false, animation:{duration:250},
+      interaction:{mode:'index', intersect:false},
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:(it)=>'T = '+it[0].label+' s'}} },
+      scales:{ x:{ title:{display:true, text:'Periodo T (s)'}, ticks:{maxTicksLimit:12} },
+               y:{ title:{display:true, text:'S_e (g) · suolo A, T1'}, beginAtZero:true } } }
+  });
+  document.getElementById('famLegend').innerHTML = righe.map((x,i)=>
+    `<span><span class="legend-swatch" style="background:${FAM_COLORI[i]};"></span>${x.TR}</span>`).join('') + '<span>anni</span>';
+}
+
 function renderSelectedLS(){
   if(!lastResults) return;   // cambio di stato limite prima del primo calcolo
   const code = document.getElementById('lsSelect').value;
   const r = lastResults.byLS[code];
 
+  document.getElementById('kpiTR').textContent = r.TR.toFixed(0);
+  document.getElementById('kpiAg').textContent = fmt(r.ag, 3);
+  document.getElementById('kpiF0').textContent = fmt(r.F0, 3);
+  document.getElementById('kpiTc0').textContent = fmt(r.Tc0, 3);
   document.getElementById('kpiS').textContent = fmt(r.S, 3);
   document.getElementById('kpiAmax').textContent = fmt(r.amax, 3);
+  document.getElementById('kpiSs').textContent = fmt(r.Ss, 3);
+  document.getElementById('kpiCc').textContent = fmt(r.Cc, 3);
   document.getElementById('kpiKh').textContent = fmt(r.kh, 3);
-  document.getElementById('kpiKv').textContent = fmt(r.kv, 3);
+  document.getElementById('kpiKv').textContent = isFinite(r.kv) ? '±' + fmt(r.kv, 3) : '–';
+  document.getElementById('ampliLsLabel').textContent = '· ' + code;
+  document.querySelectorAll('#hazardTableBody tr').forEach((tr,i)=>tr.classList.toggle('hl', LIMIT_STATES[i] && LIMIT_STATES[i].code === code));
+  document.querySelectorAll('#lsSeg button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.ls === code)));
+  hzSeguiSL();
 
   const ampliBody = document.getElementById('ampliTableBody');
   ampliBody.innerHTML = `
@@ -1787,6 +2055,7 @@ function s2Render(){
   const st = s2Stato;
   const lay = layerInquadramento(); if(lay) lay.comune.clearLayers();
   if(!st.candidati.length){
+    const chip = document.getElementById('comuneChip'); if(chip) chip.textContent = 'nessun comune (mare?)';
     box.innerHTML = `<div class="alert alert-warn">Il punto non ricade in alcun comune (mare o fuori dal territorio nazionale) e non ci sono comuni entro 2 km.</div>`;
     return;
   }
@@ -1817,6 +2086,8 @@ function s2Render(){
     ? `zona ${principali[0]}` + (sottozona ? ` (sottozona ${escapeHtml(zona)} definita dalla Regione)` : '')
     : `zone ${principali.join(' e ')} (sottozone ${escapeHtml(zona)})`;
 
+  const chip = document.getElementById('comuneChip');
+  if(chip) chip.textContent = nome + ' (' + prov + ') · ' + (principali.length === 1 ? 'zona ' + zona : 'zone ' + zona);
   html += `<table class="data-table">
     <tr><td>Comune</td><td><b>${escapeHtml(nome)}</b> (${escapeHtml(prov)}) – ${escapeHtml(st.CL.regioni[iReg])}</td></tr>
     <tr><td>Codice ISTAT</td><td>${codice}${codDpc && codDpc !== codice ? ` <span class="hint">(nel file DPC: ${codDpc})</span>` : ''}</td></tr>
@@ -2083,12 +2354,51 @@ document.getElementById('siteName').addEventListener('input', ()=>{
 });
 document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
 
+// Barra dello stato limite: i pulsanti pilotano il <select id="lsSelect"> (fonte unica)
+document.querySelectorAll('#lsSeg button').forEach(b=>b.addEventListener('click', ()=>{
+  const sel = document.getElementById('lsSelect');
+  sel.value = b.dataset.ls;
+  sel.dispatchEvent(new Event('change'));
+}));
+
+// Schede dei risultati (ARIA tabs: frecce sinistra/destra per spostarsi)
+const TAB_IDS = ['parametri','spettri','inquadramento'];
+function mostraScheda(id, focus){
+  TAB_IDS.forEach(k=>{
+    const t = document.getElementById('tab-'+k), pnl = document.getElementById('panel-'+k);
+    const on = (k === id);
+    t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+    pnl.hidden = !on;
+    if(on && focus) t.focus();
+  });
+  if(id === 'spettri'){ [spectrumChart, designChart, famChart].forEach(c=>{ if(c) c.resize(); }); }
+}
+TAB_IDS.forEach((k,i)=>{
+  const t = document.getElementById('tab-'+k);
+  t.addEventListener('click', ()=>mostraScheda(k));
+  t.addEventListener('keydown', e=>{
+    if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+      const j = (i + (e.key === 'ArrowRight' ? 1 : TAB_IDS.length - 1)) % TAB_IDS.length;
+      mostraScheda(TAB_IDS[j], true); e.preventDefault();
+    }
+  });
+});
+document.getElementById('topVersion').textContent = 'v' + APP_VERSION;
+
 // Ridisegna i grafici Chart.js alle dimensioni della vista di stampa prima
 // che il browser generi il PDF, altrimenti i canvas possono restare
 // congelati alla risoluzione dello schermo e apparire tagliati o sfocati.
 window.addEventListener('beforeprint', ()=>{
-  if(spectrumChart) spectrumChart.resize();
-  if(designChart) designChart.resize();
+  // in stampa compaiono tutte le schede: i grafici vanno ridimensionati
+  document.querySelectorAll('.tabpanel').forEach(p=>p.dataset.wasHidden = p.hidden ? '1' : '');
+  document.querySelectorAll('.tabpanel').forEach(p=>p.hidden = false);
+  [spectrumChart, designChart, famChart].forEach(c=>{ if(c) c.resize(); });
+  if(map) map.invalidateSize();
+});
+window.addEventListener('afterprint', ()=>{
+  document.querySelectorAll('.tabpanel').forEach(p=>{ if(p.dataset.wasHidden === '1') p.hidden = true; });
+  [spectrumChart, designChart, famChart].forEach(c=>{ if(c) c.resize(); });
+  if(map) map.invalidateSize();
 });
 
 // calcolo iniziale alla apertura pagina: prima attende il caricamento della griglia

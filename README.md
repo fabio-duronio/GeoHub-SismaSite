@@ -12,10 +12,12 @@ Autore: **Fabio Duronio**, geologo.
 
 ## Funzionalità
 
-- **Ubicazione del sito** su mappa interattiva (Leaflet) o per coordinate inserite a mano.
+- **Ubicazione del sito** su mappa interattiva (Leaflet) o per coordinate inserite a mano, con basi cartografiche stradale (OpenStreetMap), rilievo (OpenTopoMap) e satellitare (Esri), vertici della maglia del reticolo usati nel calcolo e blocco della mappa contro gli spostamenti involontari.
+- **Carta di pericolosità INGV** (dalla v1.7.0): carta di `a_g` del modello MPS04 dal servizio WMS ufficiale INGV, per le 9 probabilità di eccedenza in 50 anni (i 9 `T_R` del reticolo) e i percentili 16°, 50° e 84°, con legenda ufficiale e opacità regolabile; per impostazione predefinita segue lo stato limite selezionato (livello con `T_R` più vicino). È un **inquadramento visivo**: il calcolo usa sempre il reticolo dell'Allegato B.
 - **Parametri di pericolosità sismica di base**: `a_g`, `F_0`, `T*_C` per i quattro stati limite (SLO, SLD, SLV, SLC), interpolati dal **reticolo di riferimento ufficiale a 10.751 nodi** (Allegato B) e, per le isole, dalla **Tabella 2** dello stesso Allegato.
 - **Periodo di ritorno** `T_R` calcolato da `V_R = V_N · C_U` e `P_VR` secondo NTC §2.4.3.
 - **Coefficienti di amplificazione** `S_S`, `C_C`, `S_T` e periodi `T_B`, `T_C`, `T_D` (NTC §3.2.3.2.1, Tabb. 3.2.IV e 3.2.V).
+- **Pericolosità di base per i 9 periodi di ritorno** del reticolo (dalla v1.7.0): tabella di `a_g`, `F_0`, `T*_C` e spettri elastici su suolo A, T1, come la Fase 1 del foglio Spettri-NTC del CSLP.
 - **Spettri di risposta elastici** orizzontale `S_e(T)` e verticale `S_ve(T)`, con effetto dello smorzamento `η`.
 - **Spettri di risposta di progetto** orizzontale `S_d(T)` e verticale `S_dv(T)` secondo §3.2.3.4 (SLO: q = 1) e §3.2.3.5 (SLD/SLV/SLC: sostituzione `η → 1/q`), con fattore di comportamento `q` impostabile e applicazione del minimo `S_d ≥ 0,2·a_g`.
 - **Coefficienti sismici** `k_h = β_s · a_max/g` e `k_v = ±0,5 k_h` per analisi pseudostatica dei pendii (NTC §7.11.3.5.2, Tab. 7.11.I); non calcolati se `a_g` > 0,4 g, oltre il campo della tabella. Passeranno all'app GeoHub-SoilSite.
@@ -25,6 +27,7 @@ Autore: **Fabio Duronio**, geologo.
   - **eventi strumentali nel raggio** dal servizio FDSN dell'INGV, in tempo reale (predefiniti: 30 km, M ≥ 2,5, dal 1985), con il tipo di magnitudo di ogni evento;
   - **storia sismica della località** (DBMI15 v4.0) e **terremoti storici con epicentro nel raggio** (CPTI15 v4.0);
   - **faglie attive e capaci** dal catalogo ISPRA ITHACA, in tempo reale, entro un raggio di ricerca non normativo (predefinito 10 km), senza fasce di rispetto, con rimando alle Linee guida FAC.
+- **Interfaccia a schede** (dalla v1.7.0): Parametri, Spettri, Inquadramento sismico; la stampa le riporta tutte in sequenza.
 - **Report stampabile** con intestazione di tracciabilità: sito/commessa, data, versione, coordinate, fonte dei parametri e **ID e distanza dei nodi del reticolo utilizzati**.
 
 ## Prerequisiti

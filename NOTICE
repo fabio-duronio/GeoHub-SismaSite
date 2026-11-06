@@ -78,6 +78,16 @@ storica-data.json — elaborato da (licenza CC BY-SA 4.0, come indicato nei
   Modifiche: selezione delle località italiane con identificativo, formato
   colonnare JSON.
 
+Carta di pericolosità mostrata in mappa (servizio WMS, nessun dato ridistribuito):
+  Meletti C., Montaldo V., Stucchi M., Martinelli F. (2006). Database della
+  pericolosità sismica MPS04. Istituto Nazionale di Geofisica e Vulcanologia
+  (INGV). https://doi.org/10.13127/sh/mps04/db — CC BY 4.0.
+  Servizio: https://mps04-ws.pi.ingv.it/wms_mps04_pga
+
+Basi cartografiche (tile caricati dai rispettivi server, soggetti ai termini
+d'uso dei fornitori): OpenStreetMap (© OpenStreetMap contributors, ODbL);
+OpenTopoMap (CC BY-SA); Esri World Imagery (© Esri e fornitori).
+
 Servizi interrogati in tempo reale dall'app (nessun dato ridistribuito):
   INGV, servizio FDSN webservices.ingv.it (CC BY 4.0);
   ISPRA, ITHACA - ITHACA Working Group (2019), versione dicembre 2019
