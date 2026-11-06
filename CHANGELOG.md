@@ -1,5 +1,9 @@
 # Changelog
 
+## Non rilasciato
+
+- Immagine di anteprima del link (`assets/og-image.png`) aggiornata con il nuovo indirizzo in minuscolo `fabio-duronio.github.io/geohub-sismasite` (il vecchio indirizzo non viene reindirizzato). Già attiva sul sito pubblicato; entrerà nella prossima release.
+
 ## 1.7.0 — 2026-11-06
 
 Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cambiano (verifiche `verifica_numeri.py` e `verifica_indipendente.py` superate).
@@ -18,9 +22,6 @@ Nuova impaginazione e carta di pericolosità INGV. I parametri calcolati non cam
 - Vertici della maglia del reticolo usati nell'interpolazione, riportati da ED50 a WGS84, con ID e distanza.
 - Legenda della carta in un riquadro proprio in basso a destra, richiudibile (sul telefono parte chiusa e si alterna al pannello dei livelli). La legenda occupa solo lo spazio libero sotto il pannello dei livelli e scorre al suo interno: i due riquadri non si sovrappongono. Il pannello dei livelli si può ridurre su ogni schermo.
 - Blocco della mappa: rotella disattivata sul computer e trascinamento disattivato sul telefono finché non si tocca il lucchetto, per non spostare la mappa scorrendo la pagina. Scala grafica.
-
-**Anteprima del link**
-- Immagine di anteprima (`assets/og-image.png`) aggiornata con il nuovo indirizzo in minuscolo `fabio-duronio.github.io/geohub-sismasite` (il vecchio indirizzo non viene reindirizzato).
 
 **App future**
 - I testi dell'app non citano più i nomi provvisori delle future app GeoHub, ancora in progetto: k_h, k_v e lo screening di liquefazione sono indicati come destinati a future app dedicate.
